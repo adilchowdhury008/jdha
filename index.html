@@ -1,0 +1,1144 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Search, ShieldCheck, FileText, Settings, Users, LogOut, 
+  Plus, Edit, Trash2, Menu, X, Bell, CheckCircle, AlertTriangle, 
+  LayoutDashboard, BookOpen
+} from 'lucide-react';
+
+const initialSettings = {
+  madrasaName: 'Jamia Islamia Arabia Darul Uloom',
+  shortName: 'JIA',
+  logoUrl: 'https://placehold.co/150x150/16a34a/ffffff?text=Logo',
+  bannerUrl: 'https://placehold.co/1200x300/16a34a/ffffff?text=Bismillah',
+  address: '123 Islamic Education Center, Dhaka, Bangladesh',
+  phone: '+880 1234 567890',
+  email: 'info@jamiaislamia.edu.bd',
+  website: 'www.jamiaislamia.edu.bd',
+  facebook: '#',
+  youtube: '#',
+  principalName: 'Mufti Abdur Rahman',
+  footerText: '© 2026 Jamia Islamia Arabia. All Rights Reserved.'
+};
+
+const initialClasses = [
+  { id: 1, name: 'Fazil 1st Year' },
+  { id: 2, name: 'Kamil 1st Year' },
+  { id: 3, name: 'Mutawassitah' }
+];
+
+const initialStudents = [
+  {
+    id: 1,
+    photo: 'https://placehold.co/120x150/e2e8f0/475569?text=Photo',
+    name: 'Abdullah Al Noman',
+    arabicName: 'عبد الله النعمان',
+    father: 'Abdur Rahim',
+    arabicFather: 'عبد الرحيم',
+    mother: 'Fatima Begum',
+    arabicMother: 'فاطمة بيغوم',
+    dob: '2005-01-15',
+    mobile: '01711000000',
+    address: 'Mirpur, Dhaka',
+    roll: '1001',
+    reg: '20261001',
+    serial: 'SN998877',
+    cert: 'CN112233',
+    className: 'Fazil 1st Year',
+    session: '2025-2026',
+    exam: 'Annual Examination',
+    year: '2026',
+    subjects: [
+      { name: 'Quran Majeed & Tajweed', arabicName: 'القرآن المجيد والتجويد', marks: 88, grade: 'A+' },
+      { name: 'Hadith Sharif', arabicName: 'الحديث الشريف', marks: 82, grade: 'A+' },
+      { name: 'Islamic Jurisprudence (Fiqh)', arabicName: 'الفقه الإسلامي', marks: 75, grade: 'A' },
+      { name: 'Arabic Literature', arabicName: 'الأدب العربي', marks: 68, grade: 'A-' }
+    ]
+  }
+];
+
+const initialNotices = [
+  { id: 1, title: 'Results for Annual Examination 2026 Published', date: '2026-06-20' },
+  { id: 2, title: 'Admission Open for Session 2026-2027', date: '2026-06-15' }
+];
+
+const calculateGPA = (marks) => {
+  if (marks >= 80) return { point: 5.0, grade: 'A+' };
+  if (marks >= 70) return { point: 4.0, grade: 'A' };
+  if (marks >= 60) return { point: 3.5, grade: 'A-' };
+  if (marks >= 50) return { point: 3.0, grade: 'B' };
+  if (marks >= 40) return { point: 2.0, grade: 'C' };
+  if (marks >= 33) return { point: 1.0, grade: 'D' };
+  return { point: 0.0, grade: 'F' };
+};
+
+const calculateTotal = (subjects) => {
+  let totalMarks = 0;
+  let totalPoints = 0;
+  let failed = false;
+
+  subjects.forEach(sub => {
+    totalMarks += Number(sub.marks);
+    const { point } = calculateGPA(Number(sub.marks));
+    totalPoints += point;
+    if (point === 0) failed = true;
+  });
+
+  const gpa = failed ? 0.00 : (subjects.length ? (totalPoints / subjects.length).toFixed(2) : 0.00);
+  const status = failed ? 'Failed' : 'Passed';
+  return { totalMarks, gpa, status };
+};
+
+export default function App() {
+  const [settings, setSettings] = useState(initialSettings);
+  const [students, setStudents] = useState(initialStudents);
+  const [notices, setNotices] = useState(initialNotices);
+  const [classesList, setClassesList] = useState(initialClasses);
+  const [user, setUser] = useState(null);
+  const [route, setRoute] = useState({ path: '/', params: {} });
+  
+  const navigate = (path, params = {}) => setRoute({ path, params });
+
+  if (route.path.startsWith('/verify/')) {
+    const serial = route.path.split('/verify/')[1];
+    return <QRVerificationPage serial={serial} students={students} settings={settings} />;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+      <style>{`
+        @media print {
+          .no-print { display: none !important; }
+          .print-only { display: block !important; }
+          body { background: white; }
+          .print-container { 
+            box-shadow: none !important; 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            border: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+        }
+      `}</style>
+
+      {!route.path.startsWith('/admin') && (
+        <PublicHeader settings={settings} navigate={navigate} user={user} setUser={setUser} />
+      )}
+
+      {}
+      <main className="min-h-[80vh]">
+        {route.path === '/' && <HomePage settings={settings} notices={notices} navigate={navigate} students={students} classesList={classesList} />}
+        {route.path === '/notices' && <PublicNoticePage notices={notices} settings={settings} />}
+        {route.path === '/result' && <ResultPage student={route.params.student} settings={settings} navigate={navigate} />}
+        {route.path === '/login' && <LoginPage navigate={navigate} setUser={setUser} />}
+        {route.path.startsWith('/admin') && (
+          <AdminLayout route={route} navigate={navigate} user={user} setUser={setUser} settings={settings}>
+            {route.path === '/admin/dashboard' && <AdminDashboard students={students} notices={notices} navigate={navigate} />}
+            {route.path === '/admin/students' && <AdminStudents students={students} setStudents={setStudents} navigate={navigate} />}
+            {route.path === '/admin/student/edit' && <AdminStudentEdit studentId={route.params.id} students={students} setStudents={setStudents} navigate={navigate} classesList={classesList} />}
+            {route.path === '/admin/classes' && <AdminClasses classesList={classesList} setClassesList={setClassesList} />}
+            {route.path === '/admin/settings' && <AdminSettings settings={settings} setSettings={setSettings} />}
+            {route.path === '/admin/notices' && <AdminNotices notices={notices} setNotices={setNotices} />}
+          </AdminLayout>
+        )}
+      </main>
+
+      {!route.path.startsWith('/admin') && (
+        <footer className="bg-green-900 text-white py-6 md:py-8 text-center no-print px-4">
+          <p className="text-sm md:text-base">{settings.footerText}</p>
+        </footer>
+      )}
+    </div>
+  );
+}
+
+// ==========================================
+// PUBLIC COMPONENTS
+// ==========================================
+function PublicHeader({ settings, navigate, user }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  return (
+    <header className="bg-white shadow-md no-print sticky top-0 z-50">
+      <div className="bg-green-800 text-white py-1 px-4 text-xs md:text-sm flex flex-col md:flex-row justify-between items-center text-center gap-1 md:gap-0">
+        <div>{settings.email} | {settings.phone}</div>
+        <div className="space-x-4">
+          <a href={settings.facebook} className="hover:text-green-300">Facebook</a>
+          <a href={settings.youtube} className="hover:text-green-300">YouTube</a>
+          {user ? (
+            <button onClick={() => navigate('/admin/dashboard')} className="font-bold text-yellow-300 hover:text-white">Admin Panel</button>
+          ) : (
+            <button onClick={() => navigate('/login')} className="hover:text-green-300">Admin Login</button>
+          )}
+        </div>
+      </div>
+      <div className="container mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
+        <div className="flex items-center space-x-3 md:space-x-4 cursor-pointer" onClick={() => navigate('/')}>
+          <img src={settings.logoUrl} alt="Logo" className="w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-green-600 object-cover" />
+          <div>
+            <h1 className="text-lg md:text-2xl font-bold text-green-800 leading-tight">{settings.madrasaName}</h1>
+            <p className="text-xs md:text-sm text-gray-600 font-medium hidden md:block">Result & Certificate Verification Portal</p>
+          </div>
+        </div>
+        
+        {/* Mobile Menu Toggle */}
+        <button className="md:hidden p-2 text-green-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex space-x-6 font-semibold text-gray-700">
+          <button onClick={() => navigate('/')} className="hover:text-green-600 flex items-center gap-1"><Search size={18}/> Verify Result</button>
+          <button onClick={() => navigate('/notices')} className="hover:text-green-600 flex items-center gap-1"><Bell size={18}/> Notice Board</button>
+        </nav>
+      </div>
+
+      {/* Mobile Nav */}
+      {mobileMenuOpen && (
+        <nav className="md:hidden bg-gray-50 border-t flex flex-col font-semibold text-gray-700 pb-2">
+          <button onClick={() => { navigate('/'); setMobileMenuOpen(false); }} className="p-4 border-b hover:bg-gray-100 flex items-center justify-center gap-2 w-full text-green-800">
+            <Search size={18}/> Verify Result
+          </button>
+          <button onClick={() => { navigate('/notices'); setMobileMenuOpen(false); }} className="p-4 border-b hover:bg-gray-100 flex items-center justify-center gap-2 w-full text-green-800">
+            <Bell size={18}/> Notice Board
+          </button>
+        </nav>
+      )}
+    </header>
+  );
+}
+
+function HomePage({ settings, notices, navigate, students, classesList }) {
+  const [searchForm, setSearchForm] = useState({ exam: '', year: '', class: '', roll: '', reg: '' });
+  const [error, setError] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const student = students.find(s => 
+      s.roll === searchForm.roll && 
+      s.reg === searchForm.reg && 
+      s.year === searchForm.year && 
+      s.className === searchForm.class
+    );
+    if (student) {
+      navigate('/result', { student });
+    } else {
+      setError('No record found with the provided details.');
+    }
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-6 md:py-8 max-w-6xl">
+      {/* Banner */}
+      <div className="w-full h-40 md:h-64 rounded-xl overflow-hidden shadow-lg mb-6 md:mb-8 relative">
+        <img src={settings.bannerUrl} alt="Banner" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4">
+          <h2 className="text-white text-2xl md:text-5xl font-bold text-center drop-shadow-lg">
+            Welcome to {settings.shortName} Verification Portal
+          </h2>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        {/* Search Form */}
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-md p-4 md:p-6 border-t-4 border-green-600">
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <Search className="text-green-600" size={24} />
+            <h3 className="text-lg md:text-xl font-bold text-gray-800">Result & Certificate Verification</h3>
+          </div>
+          
+          {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4 flex items-center gap-2 text-sm"><AlertTriangle size={18} className="flex-shrink-0"/> {error}</div>}
+
+          <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold mb-1">Examination</label>
+              <select className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-gray-50" 
+                value={searchForm.exam} onChange={e => setSearchForm({...searchForm, exam: e.target.value})} required>
+                <option value="">Select Exam</option>
+                <option value="Annual Examination">Annual Examination</option>
+                <option value="Half-Yearly Examination">Half-Yearly Examination</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">Passing Year</label>
+              <select className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-gray-50"
+                value={searchForm.year} onChange={e => setSearchForm({...searchForm, year: e.target.value})} required>
+                <option value="">Select Year</option>
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">Class</label>
+              <select className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-gray-50" 
+                value={searchForm.class} onChange={e => setSearchForm({...searchForm, class: e.target.value})} required>
+                <option value="">Select Class</option>
+                {classesList.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">Roll Number</label>
+              <input type="text" className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-gray-50" 
+                value={searchForm.roll} onChange={e => setSearchForm({...searchForm, roll: e.target.value})} required />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold mb-1">Registration Number</label>
+              <input type="text" className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-gray-50" 
+                value={searchForm.reg} onChange={e => setSearchForm({...searchForm, reg: e.target.value})} required />
+            </div>
+            <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 mt-2">
+              <button type="submit" className="flex-1 bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-4 rounded-lg transition shadow-sm">
+                Search Result
+              </button>
+              <button type="button" onClick={() => setSearchForm({ exam: '', year: '', class: '', roll: '', reg: '' })} 
+                className="w-full sm:w-1/3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition shadow-sm">
+                Reset
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Notice Board */}
+        <div className="bg-white rounded-xl shadow-md border-t-4 border-blue-600 overflow-hidden flex flex-col h-full">
+          <div className="bg-blue-50 p-4 border-b flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bell className="text-blue-600" size={20} />
+              <h3 className="text-lg font-bold text-gray-800">Notice Board</h3>
+            </div>
+            <button onClick={() => navigate('/notices')} className="text-sm font-semibold text-blue-700 hover:underline">View All</button>
+          </div>
+          <div className="p-4 flex-1 overflow-y-auto max-h-[300px] lg:max-h-full">
+            {notices.length === 0 ? <p className="text-gray-500 text-sm text-center py-4">No notices available.</p> : (
+              <ul className="space-y-4">
+                {notices.map(notice => (
+                  <li key={notice.id} className="border-b pb-3 last:border-0 last:pb-0">
+                    <span className="text-xs text-blue-600 font-semibold bg-blue-50 px-2 py-1 rounded-md mb-1 inline-block">{notice.date}</span>
+                    <p className="text-sm font-medium text-gray-800 hover:text-blue-700 cursor-pointer transition leading-relaxed">{notice.title}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ResultPage({ student, settings, navigate }) {
+  if (!student) {
+    return <div className="p-8 text-center min-h-[50vh] flex flex-col items-center justify-center"><p className="text-lg mb-4">No student data found.</p><button onClick={()=>navigate('/')} className="bg-green-600 text-white px-6 py-2 rounded-lg font-bold">Go Back</button></div>;
+  }
+
+  const { totalMarks, gpa, status } = calculateTotal(student.subjects);
+  const verifyUrl = `${window.location.origin}${window.location.pathname}#/verify/${student.serial}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verifyUrl)}`;
+
+  return (
+    <div className="container mx-auto p-2 md:p-8 flex justify-center">
+      {/* Responsive wrapper to prevent certificate compression on mobile */}
+      <div className="w-full overflow-x-auto pb-6">
+        <div className="w-full min-w-[800px] max-w-4xl bg-white shadow-2xl rounded-sm p-8 md:p-12 border-[12px] border-double border-green-800 relative z-0 mx-auto print-container">
+          
+          {/* Watermark */}
+          <div className="absolute inset-0 z-[-1] flex items-center justify-center opacity-5 pointer-events-none">
+            <img src={settings.logoUrl} alt="Watermark" className="w-1/2" />
+          </div>
+
+          {/* Header */}
+          <div className="text-center mb-8 flex justify-between items-start">
+            <img src={settings.logoUrl} alt="Logo" className="w-20 h-20 md:w-24 md:h-24 object-contain" />
+            <div className="flex-1 px-4">
+              <h1 className="text-2xl md:text-4xl font-bold text-green-900 uppercase tracking-wider">{settings.madrasaName}</h1>
+              <p className="text-xs md:text-sm font-semibold text-gray-700 mt-1">{settings.address}</p>
+              <h2 className="text-lg md:text-xl font-bold mt-4 bg-green-800 text-white inline-block px-4 md:px-6 py-1 rounded-full uppercase tracking-widest">Academic Marksheet</h2>
+            </div>
+            <img src={qrUrl} alt="QR Code" className="w-20 h-20 md:w-24 md:h-24 border p-1 bg-white" />
+          </div>
+
+          <div className="w-full border-b-2 border-green-800 mb-6"></div>
+
+          {/* Student Info - Dual Language Layout */}
+          <div className="flex flex-row justify-between mb-8 gap-6 relative">
+            <div className="absolute top-0 left-1/2 bottom-0 w-px bg-green-200"></div>
+            
+            {/* English Side (Left) */}
+            <div className="flex-1 space-y-2 text-xs md:text-sm font-medium pr-4">
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">Student Name:</span> <span className="font-bold text-black uppercase">{student.name}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">Father's Name:</span> <span>{student.father}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">Mother's Name:</span> <span>{student.mother}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">Roll Number:</span> <span>{student.roll}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">Registration No:</span> <span>{student.reg}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">Class:</span> <span>{student.className}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">Session:</span> <span>{student.session}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">Examination:</span> <span>{student.exam} ({student.year})</span></div>
+            </div>
+
+            {/* Arabic Side (Right) */}
+            <div className="flex-1 space-y-2 text-xs md:text-sm font-medium text-right pl-4" dir="rtl">
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">اسم الطالب:</span> <span className="font-bold text-black font-arabic text-base md:text-lg">{student.arabicName}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">اسم الوالد:</span> <span className="font-arabic">{student.arabicFather || student.father}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">اسم الوالدة:</span> <span className="font-arabic">{student.arabicMother || student.mother}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">رقم الجلوس:</span> <span>{student.roll}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">رقم التسجيل:</span> <span>{student.reg}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">الصف:</span> <span>{student.className}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">الدورة:</span> <span>{student.session}</span></div>
+              <div className="flex"><span className="w-24 md:w-32 text-gray-600">الامتحان:</span> <span>{student.exam}</span></div>
+            </div>
+            
+            {/* Photo */}
+            <div className="absolute top-0 right-1/2 transform translate-x-1/2 w-20 h-24 md:w-24 md:h-32 border-2 border-gray-400 p-1 bg-white z-10">
+              <img src={student.photo} alt="Student" className="w-full h-full object-cover" />
+            </div>
+          </div>
+
+          {/* Marks Table */}
+          <table className="w-full border-collapse border border-gray-800 mb-8 text-xs md:text-sm bg-white relative z-10">
+            <thead>
+              <tr className="bg-green-100 text-green-900 border border-gray-800">
+                <th className="p-2 border border-gray-800 text-left w-10 md:w-12">SL</th>
+                <th className="p-2 border border-gray-800 text-left">Subject (English)</th>
+                <th className="p-2 border border-gray-800 text-right" dir="rtl">المادة (Arabic)</th>
+                <th className="p-2 border border-gray-800 text-center w-16 md:w-24">Marks</th>
+                <th className="p-2 border border-gray-800 text-center w-16 md:w-24">Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              {student.subjects.map((sub, idx) => {
+                const { grade } = calculateGPA(Number(sub.marks));
+                return (
+                  <tr key={idx} className="border border-gray-800">
+                    <td className="p-2 border border-gray-800 text-center">{idx + 1}</td>
+                    <td className="p-2 border border-gray-800 font-semibold">{sub.name}</td>
+                    <td className="p-2 border border-gray-800 text-right font-arabic text-base md:text-lg" dir="rtl">{sub.arabicName}</td>
+                    <td className="p-2 border border-gray-800 text-center font-bold">{sub.marks}</td>
+                    <td className="p-2 border border-gray-800 text-center font-bold">{grade}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+
+          {/* Summary */}
+          <div className="flex justify-end mb-12 md:mb-16">
+            <table className="border-collapse border border-gray-800 text-xs md:text-sm w-48 md:w-64 bg-green-50">
+              <tbody>
+                <tr>
+                  <td className="p-2 border border-gray-800 font-bold">Total Marks:</td>
+                  <td className="p-2 border border-gray-800 text-center font-bold">{totalMarks}</td>
+                </tr>
+                <tr>
+                  <td className="p-2 border border-gray-800 font-bold">GPA:</td>
+                  <td className="p-2 border border-gray-800 text-center font-bold">{gpa}</td>
+                </tr>
+                <tr>
+                  <td className="p-2 border border-gray-800 font-bold">Result Status:</td>
+                  <td className={`p-2 border border-gray-800 text-center font-bold ${status==='Passed'?'text-green-700':'text-red-700'}`}>
+                    {status}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Signatures */}
+          <div className="flex justify-between items-end mt-8 md:mt-12 pt-8 md:pt-12 border-t border-gray-300">
+            <div className="text-center">
+              <div className="w-32 md:w-40 border-b border-gray-800 mb-2"></div>
+              <span className="font-bold text-xs md:text-sm text-gray-700">Controller of Exams</span>
+            </div>
+            <div className="text-center">
+              <div className="w-32 md:w-40 border-b border-gray-800 mb-2 text-xs md:text-sm italic font-serif">Signed digitally</div>
+              <span className="font-bold text-xs md:text-sm text-gray-700">Principal / Muhtamim</span><br/>
+              <span className="text-[10px] md:text-xs text-gray-500">{settings.principalName}</span>
+            </div>
+          </div>
+
+          {/* Meta Info */}
+          <div className="mt-8 text-[10px] md:text-xs text-gray-400 text-center">
+            Serial No: {student.serial} | Certificate No: {student.cert} | Print Date: {new Date().toLocaleDateString()}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QRVerificationPage({ serial, students, settings }) {
+  const student = students.find(s => s.serial === serial);
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <style>{`
+        @media print {
+          body { display: none !important; }
+        }
+      `}</style>
+
+      {!student ? (
+        <div className="text-center bg-red-50 p-6 md:p-8 rounded-xl shadow-lg border border-red-200 max-w-sm w-full">
+          <AlertTriangle className="mx-auto text-red-500 mb-4" size={48} />
+          <h2 className="text-xl md:text-2xl font-bold text-red-700 mb-2">Invalid Certificate</h2>
+          <p className="text-sm md:text-base text-gray-700">The scanned QR code does not match any official record.</p>
+        </div>
+      ) : (
+        <div className="w-full max-w-md bg-white border border-gray-200 shadow-2xl rounded-2xl overflow-hidden">
+          <div className="bg-green-600 text-white p-5 md:p-6 text-center">
+            <CheckCircle className="mx-auto text-white mb-2" size={40} />
+            <h2 className="text-lg md:text-xl font-bold tracking-wider uppercase">Certificate Verified</h2>
+            <p className="text-green-100 text-xs md:text-sm mt-1">Official Digital Record</p>
+          </div>
+          
+          <div className="p-5 md:p-6 text-center">
+            <img src={settings.logoUrl} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 mx-auto object-contain mb-4" />
+            <h3 className="font-bold text-base md:text-lg text-gray-800">{settings.madrasaName}</h3>
+            
+            <div className="mt-4 md:mt-6 border-t border-gray-100 pt-4 md:pt-6">
+              <img src={student.photo} alt="Student" className="w-20 h-20 md:w-24 md:h-24 mx-auto rounded-full border-2 border-green-500 object-cover shadow-sm mb-4" />
+              <h4 className="text-xl md:text-2xl font-bold text-gray-900">{student.name}</h4>
+              <p className="text-gray-500 text-sm font-arabic mt-1">{student.arabicName}</p>
+            </div>
+
+            <div className="mt-5 md:mt-6 bg-gray-50 rounded-xl p-4 text-xs md:text-sm text-left space-y-3 shadow-inner">
+              <div className="flex justify-between border-b pb-2"><span className="text-gray-500 font-semibold">Roll Number:</span> <span className="font-bold">{student.roll}</span></div>
+              <div className="flex justify-between border-b pb-2"><span className="text-gray-500 font-semibold">Registration No:</span> <span className="font-bold">{student.reg}</span></div>
+              <div className="flex justify-between border-b pb-2"><span className="text-gray-500 font-semibold">Serial Number:</span> <span className="font-mono text-blue-700 font-bold">{student.serial}</span></div>
+              <div className="flex justify-between border-b pb-2"><span className="text-gray-500 font-semibold">Certificate No:</span> <span className="font-mono">{student.cert}</span></div>
+              <div className="flex justify-between border-b pb-2"><span className="text-gray-500 font-semibold">Examination:</span> <span className="text-right">{student.exam}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500 font-semibold">Passing Year:</span> <span>{student.year}</span></div>
+            </div>
+            
+            <div className="mt-6 flex justify-center items-center gap-2 text-green-700 font-bold bg-green-100 py-3 rounded-xl text-sm shadow-sm">
+               <ShieldCheck size={20} /> Verified by Central Database
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ==========================================
+// ADMIN PANEL
+// ==========================================
+function LoginPage({ navigate, setUser }) {
+  const [creds, setCreds] = useState({ email: '', password: '' });
+  
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setUser({ role: 'admin', name: 'Super Admin' });
+    navigate('/admin/dashboard');
+  };
+
+  return (
+    <div className="min-h-[80vh] flex items-center justify-center bg-gray-50 px-4">
+      <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ShieldCheck className="text-green-600" size={32} />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800">Secure Admin Login</h2>
+        </div>
+        <form onSubmit={handleLogin}>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
+            <input type="email" required className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition" placeholder="admin@madrasa.com" value={creds.email} onChange={e=>setCreds({...creds, email: e.target.value})} />
+          </div>
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
+            <input type="password" required className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition" placeholder="••••••••" value={creds.password} onChange={e=>setCreds({...creds, password: e.target.value})} />
+          </div>
+          <button type="submit" className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-md">
+            Login to Dashboard
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AdminLayout({ children, route, navigate, user, setUser, settings }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Default close on mobile
+
+  if (!user) {
+    navigate('/login');
+    return null;
+  }
+
+  const handleLogout = () => {
+    setUser(null);
+    navigate('/');
+  };
+
+  const navItems = [
+    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Students & Results', path: '/admin/students', icon: Users },
+    { name: 'Class Management', path: '/admin/classes', icon: BookOpen },
+    { name: 'Notices', path: '/admin/notices', icon: Bell },
+    { name: 'Website Settings', path: '/admin/settings', icon: Settings },
+  ];
+
+  const handleNavClick = (path) => {
+    navigate(path);
+    if(window.innerWidth < 768) setSidebarOpen(false);
+  }
+
+  return (
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
+      {/* Sidebar Overlay for Mobile */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" onClick={() => setSidebarOpen(false)}></div>
+      )}
+
+      {/* Sidebar */}
+      <aside className={`bg-gray-900 text-white w-64 flex flex-col transition-transform duration-300 fixed md:relative z-30 h-full ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="p-4 flex items-center justify-between border-b border-gray-800">
+          <div className="flex items-center gap-3">
+            <img src={settings.logoUrl} className="w-10 h-10 rounded bg-white p-1" alt="Logo" />
+            <span className="font-bold text-lg leading-tight truncate">Admin Panel</span>
+          </div>
+          <button className="md:hidden text-gray-400 hover:text-white" onClick={() => setSidebarOpen(false)}><X size={20}/></button>
+        </div>
+        <nav className="flex-1 py-4 overflow-y-auto">
+          <ul>
+            {navItems.map(item => (
+              <li key={item.path}>
+                <button 
+                  onClick={() => handleNavClick(item.path)} 
+                  className={`w-full flex items-center gap-3 px-6 py-3.5 text-sm transition ${route.path === item.path ? 'bg-green-700 border-l-4 border-green-400 text-white font-semibold' : 'hover:bg-gray-800 text-gray-400 hover:text-white'}`}
+                >
+                  <item.icon size={18} /> {item.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className="p-4 border-t border-gray-800">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-gray-800 rounded-lg transition">
+            <LogOut size={18} /> Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col w-full h-full overflow-hidden">
+        {/* Topbar */}
+        <header className="bg-white shadow-sm h-16 flex items-center justify-between px-4 z-10 relative shrink-0">
+          <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+            <Menu size={24} />
+          </button>
+          <div className="hidden md:block font-bold text-gray-700">{settings.shortName} System</div>
+          <div className="flex items-center gap-4 ml-auto">
+             <button onClick={()=>navigate('/')} className="text-sm font-semibold text-blue-600 hover:underline bg-blue-50 px-3 py-1.5 rounded-lg">View Website</button>
+             <div className="w-9 h-9 bg-green-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm">{user.name.charAt(0)}</div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 w-full relative">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminDashboard({ students, notices, navigate }) {
+  const totalPassed = students.filter(s => calculateTotal(s.subjects).status === 'Passed').length;
+  
+  return (
+    <div className="max-w-7xl mx-auto">
+      <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6">Admin Dashboard</h2>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+        <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-blue-500 flex items-center gap-4">
+          <div className="p-3 bg-blue-50 rounded-full"><Users className="text-blue-500" size={24}/></div>
+          <div><p className="text-xs md:text-sm text-gray-500 font-semibold">Total Students</p><p className="text-xl md:text-2xl font-bold text-gray-800">{students.length}</p></div>
+        </div>
+        <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-green-500 flex items-center gap-4">
+          <div className="p-3 bg-green-50 rounded-full"><FileText className="text-green-500" size={24}/></div>
+          <div><p className="text-xs md:text-sm text-gray-500 font-semibold">Results Published</p><p className="text-xl md:text-2xl font-bold text-gray-800">{students.length}</p></div>
+        </div>
+        <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-purple-500 flex items-center gap-4">
+          <div className="p-3 bg-purple-50 rounded-full"><ShieldCheck className="text-purple-500" size={24}/></div>
+          <div><p className="text-xs md:text-sm text-gray-500 font-semibold">Passed Students</p><p className="text-xl md:text-2xl font-bold text-gray-800">{totalPassed}</p></div>
+        </div>
+        <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-yellow-500 flex items-center gap-4">
+          <div className="p-3 bg-yellow-50 rounded-full"><Bell className="text-yellow-500" size={24}/></div>
+          <div><p className="text-xs md:text-sm text-gray-500 font-semibold">Active Notices</p><p className="text-xl md:text-2xl font-bold text-gray-800">{notices.length}</p></div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+          <h3 className="font-bold text-gray-800">Recent Registrations</h3>
+          <button onClick={()=>navigate('/admin/students')} className="text-sm font-semibold text-blue-600 hover:text-blue-800">View All</button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+              <tr>
+                <th className="px-4 py-3">Student</th>
+                <th className="px-4 py-3">Roll & Reg</th>
+                <th className="px-4 py-3">Class</th>
+                <th className="px-4 py-3 hidden sm:table-cell">Serial No</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {students.slice(0, 5).map(student => (
+                <tr key={student.id} className="hover:bg-gray-50 transition">
+                  <td className="px-4 py-3 font-medium text-gray-900 flex items-center gap-3">
+                    <img src={student.photo} alt="" className="w-8 h-8 rounded-full object-cover border" />
+                    <span className="truncate max-w-[120px] sm:max-w-none">{student.name}</span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">{student.roll} / {student.reg}</td>
+                  <td className="px-4 py-3 text-gray-600">{student.className}</td>
+                  <td className="px-4 py-3 font-mono text-gray-500 hidden sm:table-cell">{student.serial}</td>
+                </tr>
+              ))}
+              {students.length === 0 && <tr><td colSpan="4" className="px-6 py-8 text-center text-gray-500">No students added yet.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminStudents({ students, setStudents, navigate }) {
+  const [search, setSearch] = useState('');
+
+  const handleDelete = (id) => {
+    // Replaced window.confirm with direct delete to follow rules. 
+    // In production, a custom modal is preferred.
+    setStudents(students.filter(s => s.id !== id));
+  };
+
+  const filteredStudents = students.filter(s => 
+    s.name.toLowerCase().includes(search.toLowerCase()) || 
+    s.roll.includes(search) || 
+    s.reg.includes(search) ||
+    s.serial.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-800">Student & Result Management</h2>
+        <button onClick={() => navigate('/admin/student/edit', { id: 'new' })} className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl shadow-sm flex items-center justify-center gap-2 font-semibold transition">
+          <Plus size={20} /> Add New Record
+        </button>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-gray-100 flex gap-4 bg-gray-50">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-3 text-gray-400" size={18} />
+            <input type="text" placeholder="Search by Name, Roll, Reg..." 
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+              value={search} onChange={e=>setSearch(e.target.value)} />
+          </div>
+        </div>
+        
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-sm text-left whitespace-nowrap">
+            <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-semibold border-b border-gray-200">
+              <tr>
+                <th className="px-4 py-3">Photo</th>
+                <th className="px-4 py-3">Name & Details</th>
+                <th className="px-4 py-3">Roll & Reg</th>
+                <th className="px-4 py-3">Class/Exam</th>
+                <th className="px-4 py-3">Result</th>
+                <th className="px-4 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredStudents.map(student => {
+                const { gpa, status } = calculateTotal(student.subjects);
+                return (
+                  <tr key={student.id} className="hover:bg-gray-50 transition">
+                    <td className="px-4 py-3"><img src={student.photo} alt="" className="w-10 h-10 md:w-12 md:h-12 rounded-xl border object-cover" /></td>
+                    <td className="px-4 py-3">
+                      <div className="font-bold text-gray-900 text-base">{student.name}</div>
+                      <div className="text-xs text-gray-500 font-mono mt-0.5">Serial: {student.serial}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-gray-800">Roll: {student.roll}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">Reg: {student.reg}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-gray-800">{student.className}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{student.exam} ({student.year})</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${status==='Passed'?'bg-green-100 text-green-800':'bg-red-100 text-red-800'}`}>
+                        {status} ({gpa})
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => navigate('/result', { student })} title="View Certificate" className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition"><FileText size={18}/></button>
+                        <button onClick={() => window.open(`#/verify/${student.serial}`, '_blank')} title="QR Verification Page" className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition"><ShieldCheck size={18}/></button>
+                        <button onClick={() => navigate('/admin/student/edit', { id: student.id })} title="Edit" className="p-2 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition"><Edit size={18}/></button>
+                        <button onClick={() => handleDelete(student.id)} title="Delete" className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition"><Trash2 size={18}/></button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+              {filteredStudents.length === 0 && <tr><td colSpan="6" className="px-6 py-12 text-center text-gray-500">No matching records found.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminStudentEdit({ studentId, students, setStudents, navigate, classesList }) {
+  const isNew = studentId === 'new';
+  
+  const defaultStudentData = {
+    photo: 'https://placehold.co/120x150/e2e8f0/475569?text=Photo',
+    name: '', arabicName: '', 
+    father: '', arabicFather: '', 
+    mother: '', arabicMother: '', 
+    dob: '', mobile: '', address: '',
+    roll: '', reg: '', serial: `SN${Math.floor(Math.random()*1000000)}`, cert: `CN${Math.floor(Math.random()*1000000)}`,
+    className: '', session: '', exam: '', year: new Date().getFullYear().toString(),
+    subjects: []
+  };
+
+  const [formData, setFormData] = useState(isNew ? defaultStudentData : students.find(s => s.id === studentId) || defaultStudentData);
+
+  const handleChange = (e) => setFormData({...formData, [e.target.name]: e.target.value});
+  
+  const handleSubjectChange = (index, field, value) => {
+    const newSubjects = [...formData.subjects];
+    newSubjects[index][field] = value;
+    setFormData({...formData, subjects: newSubjects});
+  };
+
+  const addSubject = () => setFormData({...formData, subjects: [...formData.subjects, { name: '', arabicName: '', marks: 0, grade: '' }]});
+  const removeSubject = (index) => setFormData({...formData, subjects: formData.subjects.filter((_, i) => i !== index)});
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if(isNew) {
+      setStudents([{...formData, id: Date.now()}, ...students]);
+    } else {
+      setStudents(students.map(s => s.id === studentId ? formData : s));
+    }
+    navigate('/admin/students');
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto pb-10">
+      <div className="flex items-center gap-4 mb-6">
+        <button onClick={()=>navigate('/admin/students')} className="text-gray-500 hover:text-gray-800 font-medium bg-white p-2 rounded-lg shadow-sm">← Back</button>
+        <h2 className="text-xl md:text-2xl font-bold text-gray-800">{isNew ? 'Add New Student Record' : 'Edit Student Record'}</h2>
+      </div>
+
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-8 space-y-8">
+        {/* Personal Info */}
+        <section>
+          <h3 className="text-lg font-bold text-green-800 border-b pb-2 mb-4 flex items-center gap-2"><Users size={20}/> Personal Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <div className="md:col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <img src={formData.photo} alt="Preview" className="w-24 h-24 rounded-lg border-2 border-white shadow object-cover flex-shrink-0" />
+              <div className="w-full">
+                <label className="block text-sm font-bold text-gray-700 mb-1">Photo Image URL</label>
+                <input name="photo" type="text" className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 outline-none" value={formData.photo} onChange={handleChange} required />
+              </div>
+            </div>
+            
+            <div><label className="block text-sm font-bold text-gray-700 mb-1">Student Name (English)</label><input name="name" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-green-500 bg-gray-50 outline-none" value={formData.name} onChange={handleChange} required /></div>
+            <div><label className="block text-sm font-bold text-gray-700 mb-1">اسم الطالب (Arabic Name)</label><input name="arabicName" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-green-500 bg-gray-50 font-arabic outline-none" dir="rtl" value={formData.arabicName} onChange={handleChange} required /></div>
+            
+            <div><label className="block text-sm font-bold text-gray-700 mb-1">Father's Name (English)</label><input name="father" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-green-500 bg-gray-50 outline-none" value={formData.father} onChange={handleChange} required /></div>
+            <div><label className="block text-sm font-bold text-gray-700 mb-1">اسم الوالد (Arabic Father)</label><input name="arabicFather" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-green-500 bg-gray-50 font-arabic outline-none" dir="rtl" value={formData.arabicFather} onChange={handleChange} required /></div>
+            
+            <div><label className="block text-sm font-bold text-gray-700 mb-1">Mother's Name (English)</label><input name="mother" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-green-500 bg-gray-50 outline-none" value={formData.mother} onChange={handleChange} required /></div>
+            <div><label className="block text-sm font-bold text-gray-700 mb-1">اسم الوالدة (Arabic Mother)</label><input name="arabicMother" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-green-500 bg-gray-50 font-arabic outline-none" dir="rtl" value={formData.arabicMother} onChange={handleChange} required /></div>
+
+            <div><label className="block text-sm font-bold text-gray-700 mb-1">Date of Birth</label><input type="date" name="dob" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-green-500 bg-gray-50 outline-none" value={formData.dob} onChange={handleChange} required /></div>
+            <div><label className="block text-sm font-bold text-gray-700 mb-1">Mobile Number</label><input name="mobile" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-green-500 bg-gray-50 outline-none" value={formData.mobile} onChange={handleChange} required /></div>
+            <div className="md:col-span-2"><label className="block text-sm font-bold text-gray-700 mb-1">Address</label><textarea name="address" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-green-500 bg-gray-50 outline-none h-24" value={formData.address} onChange={handleChange} required /></div>
+          </div>
+        </section>
+
+        {/* Academic Info */}
+        <section>
+          <h3 className="text-lg font-bold text-blue-800 border-b pb-2 mb-4 flex items-center gap-2"><BookOpen size={20}/> Academic & Examination Information</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            <div><label className="block text-sm font-bold text-gray-700 mb-1">Roll Number</label><input name="roll" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 bg-gray-50 outline-none" value={formData.roll} onChange={handleChange} required /></div>
+            <div><label className="block text-sm font-bold text-gray-700 mb-1">Registration Number</label><input name="reg" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 bg-gray-50 outline-none" value={formData.reg} onChange={handleChange} required /></div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1">Class</label>
+              <select name="className" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 bg-gray-50 outline-none" value={formData.className} onChange={handleChange} required>
+                <option value="">Select Class</option>
+                {classesList.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+              </select>
+            </div>
+            <div><label className="block text-sm font-bold text-gray-700 mb-1">Session</label><input name="session" placeholder="e.g. 2025-2026" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 bg-gray-50 outline-none" value={formData.session} onChange={handleChange} required /></div>
+            <div><label className="block text-sm font-bold text-gray-700 mb-1">Examination Name</label><input name="exam" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 bg-gray-50 outline-none" value={formData.exam} onChange={handleChange} required /></div>
+            <div><label className="block text-sm font-bold text-gray-700 mb-1">Passing Year</label><input name="year" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 bg-gray-50 outline-none" value={formData.year} onChange={handleChange} required /></div>
+            
+            <div className="md:col-span-1 bg-gray-100 p-4 rounded-xl border border-gray-200">
+              <label className="block text-sm font-bold text-gray-600 mb-1">Serial Number (Auto-Gen)</label>
+              <input name="serial" className="w-full p-2 border border-transparent bg-transparent font-mono font-bold text-gray-800 outline-none" value={formData.serial} onChange={handleChange} readOnly />
+            </div>
+            <div className="md:col-span-2 bg-gray-100 p-4 rounded-xl border border-gray-200">
+              <label className="block text-sm font-bold text-gray-600 mb-1">Certificate Number (Auto-Gen)</label>
+              <input name="cert" className="w-full p-2 border border-transparent bg-transparent font-mono font-bold text-gray-800 outline-none" value={formData.cert} onChange={handleChange} readOnly />
+            </div>
+          </div>
+        </section>
+
+        {/* Subjects & Marks */}
+        <section>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-2 mb-4 gap-4">
+            <h3 className="text-lg font-bold text-purple-800 flex items-center gap-2"><FileText size={20}/> Subject Marks Entry</h3>
+            <button type="button" onClick={addSubject} className="w-full sm:w-auto text-sm bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200 font-bold flex items-center justify-center gap-1 transition"><Plus size={18}/> Add Subject</button>
+          </div>
+          
+          {formData.subjects.length === 0 ? <div className="bg-purple-50 rounded-xl border border-purple-100 p-8 text-center text-purple-700 font-medium">No subjects added. Click "Add Subject" to enter marks.</div> : (
+            <div className="space-y-3">
+              {formData.subjects.map((sub, index) => (
+                <div key={index} className="flex flex-col md:flex-row gap-3 md:gap-4 items-center bg-gray-50 p-4 rounded-xl border border-gray-200 relative group">
+                  <div className="hidden md:flex w-8 h-8 bg-white border rounded-full items-center justify-center font-bold text-gray-500 shadow-sm">{index+1}</div>
+                  <input placeholder="Subject Name (English)" className="w-full md:flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" value={sub.name} onChange={(e)=>handleSubjectChange(index, 'name', e.target.value)} required />
+                  <input placeholder="اسم المادة (Arabic)" className="w-full md:flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 font-arabic outline-none" dir="rtl" value={sub.arabicName} onChange={(e)=>handleSubjectChange(index, 'arabicName', e.target.value)} required />
+                  <div className="flex w-full md:w-auto gap-3 items-center">
+                    <input type="number" placeholder="Marks" className="w-full md:w-28 p-3 border rounded-lg text-center focus:ring-2 focus:ring-purple-500 font-bold outline-none" value={sub.marks} onChange={(e)=>handleSubjectChange(index, 'marks', e.target.value)} required />
+                    <button type="button" onClick={()=>removeSubject(index)} className="p-3 text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition" title="Remove"><Trash2 size={20}/></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Live Calculation Preview */}
+          {formData.subjects.length > 0 && (
+            <div className="mt-6 bg-green-50 p-4 md:p-6 rounded-xl border border-green-200 flex flex-col md:flex-row justify-between items-center gap-4">
+              <span className="font-bold text-green-900 text-lg">Live Result Preview:</span>
+              <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm md:text-base bg-white px-6 py-3 rounded-xl shadow-sm border border-green-100">
+                <span className="font-bold text-gray-700">Total: <span className="text-green-700 text-lg">{calculateTotal(formData.subjects).totalMarks}</span></span>
+                <span className="font-bold text-gray-700">GPA: <span className="text-green-700 text-lg">{calculateTotal(formData.subjects).gpa}</span></span>
+                <span className="font-bold text-gray-700">Status: <span className={`text-lg ${calculateTotal(formData.subjects).status==='Passed'?'text-green-600':'text-red-600'}`}>{calculateTotal(formData.subjects).status}</span></span>
+              </div>
+            </div>
+          )}
+        </section>
+
+        <div className="pt-8 border-t flex flex-col-reverse sm:flex-row justify-end gap-4">
+          <button type="button" onClick={()=>navigate('/admin/students')} className="w-full sm:w-auto px-6 py-3.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 font-bold transition">Cancel</button>
+          <button type="submit" className="w-full sm:w-auto px-8 py-3.5 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md font-bold transition">
+            {isNew ? 'Save Student Record' : 'Update Student Record'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function AdminClasses({ classesList, setClassesList }) {
+  const [newClass, setNewClass] = useState('');
+
+  const handleAdd = (e) => {
+    e.preventDefault();
+    if (newClass.trim() !== '') {
+      setClassesList([...classesList, { id: Date.now(), name: newClass.trim() }]);
+      setNewClass('');
+    }
+  };
+
+  const handleDelete = (id) => {
+    setClassesList(classesList.filter(c => c.id !== id));
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6">Class Management</h2>
+      
+      <form onSubmit={handleAdd} className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-200 mb-6 flex flex-col sm:flex-row items-end gap-4">
+        <div className="flex-1 w-full">
+          <label className="block text-sm font-bold text-gray-700 mb-2">New Class Name</label>
+          <input type="text" placeholder="e.g. Fazil 2nd Year" className="w-full p-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none" value={newClass} onChange={e=>setNewClass(e.target.value)} required />
+        </div>
+        <button type="submit" className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-sm">
+          <Plus size={20}/> Add Class
+        </button>
+      </form>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <table className="w-full text-sm text-left">
+          <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+            <tr>
+              <th className="px-6 py-4">Class Name</th>
+              <th className="px-6 py-4 text-right w-24">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {classesList.map(c => (
+              <tr key={c.id} className="hover:bg-gray-50 transition">
+                <td className="px-6 py-4 font-bold text-gray-800 text-base">{c.name}</td>
+                <td className="px-6 py-4 text-right">
+                  <button onClick={() => handleDelete(c.id)} className="p-2 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-700 rounded-lg transition"><Trash2 size={18}/></button>
+                </td>
+              </tr>
+            ))}
+            {classesList.length === 0 && <tr><td colSpan="2" className="px-6 py-8 text-center text-gray-500">No classes added yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function AdminSettings({ settings, setSettings }) {
+  const [formData, setFormData] = useState(settings);
+  const [saved, setSaved] = useState(false);
+
+  const handleChange = (e) => setFormData({...formData, [e.target.name]: e.target.value});
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSettings(formData);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto pb-10">
+      <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6">Website & Branding Settings</h2>
+      
+      {saved && <div className="mb-6 bg-green-100 text-green-800 p-4 rounded-xl flex items-center gap-3 font-medium border border-green-200 shadow-sm"><CheckCircle size={20} className="text-green-600"/> Settings updated successfully! Changes will reflect instantly.</div>}
+
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 md:p-8 space-y-6">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <div className="md:col-span-2"><label className="block text-sm font-bold text-gray-700 mb-1">Madrasa Full Name</label><input name="madrasaName" className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none" value={formData.madrasaName} onChange={handleChange} required /></div>
+          <div><label className="block text-sm font-bold text-gray-700 mb-1">Short Name</label><input name="shortName" className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none" value={formData.shortName} onChange={handleChange} required /></div>
+          <div><label className="block text-sm font-bold text-gray-700 mb-1">Principal / Muhtamim Name</label><input name="principalName" className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none" value={formData.principalName} onChange={handleChange} required /></div>
+          
+          <div className="md:col-span-2"><label className="block text-sm font-bold text-gray-700 mb-1">Logo Image URL</label><input name="logoUrl" className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none" value={formData.logoUrl} onChange={handleChange} required /></div>
+          <div className="md:col-span-2"><label className="block text-sm font-bold text-gray-700 mb-1">Banner Image URL</label><input name="bannerUrl" className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none" value={formData.bannerUrl} onChange={handleChange} required /></div>
+          
+          <div className="md:col-span-2"><label className="block text-sm font-bold text-gray-700 mb-1">Address</label><input name="address" className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none" value={formData.address} onChange={handleChange} required /></div>
+          
+          <div><label className="block text-sm font-bold text-gray-700 mb-1">Phone Number</label><input name="phone" className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none" value={formData.phone} onChange={handleChange} required /></div>
+          <div><label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label><input name="email" type="email" className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none" value={formData.email} onChange={handleChange} required /></div>
+          
+          <div><label className="block text-sm font-bold text-gray-700 mb-1">Facebook URL</label><input name="facebook" className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none" value={formData.facebook} onChange={handleChange} /></div>
+          <div><label className="block text-sm font-bold text-gray-700 mb-1">YouTube URL</label><input name="youtube" className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none" value={formData.youtube} onChange={handleChange} /></div>
+          
+          <div className="md:col-span-2"><label className="block text-sm font-bold text-gray-700 mb-1">Footer Copyright Text</label><input name="footerText" className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none" value={formData.footerText} onChange={handleChange} required /></div>
+        </div>
+
+        <div className="pt-6 border-t flex justify-end">
+          <button type="submit" className="w-full sm:w-auto px-10 py-3.5 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md font-bold transition">Save Settings</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function AdminNotices({ notices, setNotices }) {
+  const [title, setTitle] = useState('');
+  const [date, setDate] = useState('');
+
+  const handleAdd = (e) => {
+    e.preventDefault();
+    setNotices([{ id: Date.now(), title, date }, ...notices]);
+    setTitle(''); setDate('');
+  };
+
+  const handleDelete = (id) => {
+    setNotices(notices.filter(n => n.id !== id));
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6">Notice Board Management</h2>
+      
+      <form onSubmit={handleAdd} className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-200 mb-6 flex flex-col md:flex-row items-end gap-4">
+        <div className="flex-1 w-full">
+          <label className="block text-sm font-bold text-gray-700 mb-2">Notice Title</label>
+          <input type="text" className="w-full p-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none" value={title} onChange={e=>setTitle(e.target.value)} required />
+        </div>
+        <div className="w-full md:w-auto">
+          <label className="block text-sm font-bold text-gray-700 mb-2">Date</label>
+          <input type="date" className="w-full p-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none" value={date} onChange={e=>setDate(e.target.value)} required />
+        </div>
+        <button type="submit" className="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-sm h-[50px]">
+          <Plus size={20}/> Add
+        </button>
+      </form>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left whitespace-nowrap">
+            <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+              <tr>
+                <th className="px-6 py-4 w-32">Date</th>
+                <th className="px-6 py-4">Notice Title</th>
+                <th className="px-6 py-4 text-right w-24">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {notices.map(notice => (
+                <tr key={notice.id} className="hover:bg-gray-50 transition">
+                  <td className="px-6 py-4 font-medium text-gray-600 bg-gray-50/50">{notice.date}</td>
+                  <td className="px-6 py-4 font-bold text-gray-800 text-base whitespace-normal min-w-[200px]">{notice.title}</td>
+                  <td className="px-6 py-4 text-right">
+                    <button onClick={() => handleDelete(notice.id)} className="p-2 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-700 rounded-lg transition"><Trash2 size={18}/></button>
+                  </td>
+                </tr>
+              ))}
+              {notices.length === 0 && <tr><td colSpan="3" className="px-6 py-8 text-center text-gray-500">No notices found.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// PUBLIC NOTICE PAGE
+// ==========================================
+function PublicNoticePage({ notices, settings }) {
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-4xl min-h-[60vh]">
+      <div className="bg-white rounded-2xl shadow-sm border-t-4 border-blue-600 overflow-hidden">
+        <div className="bg-blue-50 p-6 border-b flex items-center gap-3">
+          <Bell className="text-blue-600" size={28} />
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">Notice Board</h2>
+            <p className="text-sm text-gray-600">{settings.madrasaName}</p>
+          </div>
+        </div>
+        <div className="p-6">
+          {notices.length === 0 ? (
+            <p className="text-center text-gray-500 py-8">No notices available at the moment.</p>
+          ) : (
+            <div className="space-y-4">
+              {notices.map(notice => (
+                <div key={notice.id} className="border border-gray-200 p-4 rounded-xl hover:shadow-md transition bg-gray-50 hover:bg-white flex flex-col md:flex-row md:items-center gap-4">
+                  <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-bold text-sm text-center md:min-w-[140px] shadow-inner">
+                    {notice.date}
+                  </div>
+                  <div className="flex-1 font-semibold text-gray-800 text-base md:text-lg">
+                    {notice.title}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
