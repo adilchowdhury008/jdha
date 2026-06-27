@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="bn" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Madrasa ERP Management System</title>
+    <title>মাদ্রাসা ইআরপি ম্যানেজমেন্ট সিস্টেম</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -16,7 +16,7 @@
 
     <style>
         :root {
-            /* Islamic Green Theme - No Gold */
+            /* Islamic Green Theme */
             --p-darkest: #022c22;
             --p-dark: #064e3b;
             --p-main: #047857;
@@ -30,7 +30,7 @@
         }
 
         body {
-            font-family: 'Noto Sans', sans-serif;
+            font-family: 'Tiro Bangla', 'Noto Sans', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             transition: all 0.3s ease;
@@ -39,7 +39,7 @@
         }
 
         /* Language Specific Fonts */
-        body[lang="bn"] { font-family: 'Tiro Bangla', serif; }
+        body[lang="en"] { font-family: 'Noto Sans', sans-serif; }
         body[lang="ar"] { font-family: 'Noto Kufi Arabic', sans-serif; }
 
         /* Typography */
@@ -54,10 +54,6 @@
             border-radius: 1rem;
             box-shadow: 0 10px 15px -3px rgba(4, 120, 87, 0.05), 0 4px 6px -2px rgba(4, 120, 87, 0.025);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(4, 120, 87, 0.1), 0 10px 10px -5px rgba(4, 120, 87, 0.04);
         }
 
         /* Buttons */
@@ -88,6 +84,41 @@
             border-color: var(--p-light);
         }
 
+        /* Image Upload Preview */
+        .img-preview-box {
+            width: 120px;
+            height: 120px;
+            border-radius: 10px;
+            border: 2px dashed var(--p-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f8fafc;
+            cursor: pointer;
+            position: relative;
+        }
+        .img-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .img-preview-box input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .avatar-sm {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--p-lightest);
+        }
+
         /* Layout */
         #app { min-height: 100vh; display: flex; flex-direction: column; }
         .wrapper { display: flex; flex: 1; overflow: hidden; }
@@ -101,6 +132,10 @@
             display: flex;
             flex-direction: column;
             z-index: 1000;
+        }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; height: 100vh; left: -280px; }
+            .sidebar.show { left: 0; }
         }
         .sidebar-brand { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 1rem; }
         .sidebar-brand i { font-size: 1.8rem; color: var(--p-light); }
@@ -123,13 +158,7 @@
         [dir="rtl"] .sidebar-item:hover, [dir="rtl"] .sidebar-item.active { border-right: 4px solid var(--p-light); }
 
         /* Main Content */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow-y: auto;
-        }
+        .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; }
         
         /* Topbar */
         .topbar {
@@ -141,47 +170,26 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             z-index: 10;
         }
-        .lang-switch select {
-            border-radius: 20px;
-            padding-right: 2rem;
-            font-weight: 600;
-            color: var(--p-main);
-            border-color: var(--p-lightest);
-        }
-
+        
         /* Login Screen */
         .login-wrapper {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            padding: 1rem;
             background: linear-gradient(135deg, var(--p-darkest), var(--p-main));
         }
         .login-card {
-            max-width: 500px;
+            max-width: 450px;
             width: 100%;
-            padding: 3rem;
+            padding: 2.5rem;
             background: var(--white);
             border-radius: 1.5rem;
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
             text-align: center;
         }
 
-        /* Marksheet & Print Styles */
-        .marksheet-container {
-            background: white;
-            border: 2px solid var(--p-main);
-            padding: 2rem;
-            margin: 2rem auto;
-            max-width: 900px;
-            position: relative;
-        }
-        .marksheet-header { text-align: center; border-bottom: 2px solid var(--p-main); padding-bottom: 1rem; margin-bottom: 2rem; }
-        .marksheet-table th, .marksheet-table td { border: 1px solid #cbd5e1; padding: 0.5rem; text-align: center; }
-        .marksheet-table th { background: var(--p-lightest); color: var(--p-darkest); font-weight: 600; }
-        .qr-placeholder { border: 1px dashed var(--p-main); padding: 10px; width: 100px; height: 100px; display: inline-flex; align-items: center; justify-content: center; }
-        
         /* Print Utility */
         @media print {
             body * { visibility: hidden; }
@@ -190,11 +198,10 @@
             .no-print { display: none !important; }
         }
         
-        /* Hidden Class */
         .d-none { display: none !important; }
     </style>
 </head>
-<body lang="en">
+<body lang="bn">
 
 <div id="app">
     <!-- LOGIN SCREEN -->
@@ -202,99 +209,85 @@
         <div class="login-card">
             <div class="mb-4">
                 <i class="fa-solid fa-mosque fa-3x mb-3" style="color: var(--p-main);"></i>
-                <h3 class="mb-1 fw-bold" data-i18n="login_title">Madrasa ERP</h3>
-                <p class="text-muted small" data-i18n="login_subtitle">Complete Digital Management System</p>
+                <h3 class="mb-1 fw-bold" data-i18n="login_title">মাদ্রাসা ইআরপি</h3>
+                <p class="text-muted small" data-i18n="login_subtitle">সম্পূর্ণ ডিজিটাল ম্যানেজমেন্ট সিস্টেম</p>
             </div>
 
             <!-- Role Tabs -->
             <ul class="nav nav-pills mb-4 justify-content-center" id="loginTabs">
-                <li class="nav-item">
-                    <a class="nav-link active" href="#" data-role="admin" data-i18n="admin">Admin</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" data-role="teacher" data-i18n="teacher">Teacher</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" data-role="student" data-i18n="student">Student</a>
-                </li>
+                <li class="nav-item"><a class="nav-link active" href="#" data-role="admin" data-i18n="admin">অ্যাডমিন</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" data-role="teacher" data-i18n="teacher">শিক্ষক</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" data-role="student" data-i18n="student">ছাত্র</a></li>
             </ul>
 
             <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="mb-3 text-start">
-                    <label class="form-label text-muted small fw-bold" data-i18n="username">ID / Username</label>
+                    <label class="form-label text-muted small fw-bold" data-i18n="username">আইডি / ইউজারনেম</label>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user text-muted"></i></span>
-                        <input type="text" id="loginId" class="form-control border-start-0 ps-0" placeholder="admin" required>
+                        <input type="text" id="loginId" class="form-control border-start-0 ps-0" placeholder="admin" required value="admin">
                     </div>
                 </div>
                 <div class="mb-4 text-start">
-                    <label class="form-label text-muted small fw-bold" data-i18n="password">Password</label>
+                    <label class="form-label text-muted small fw-bold" data-i18n="password">পাসওয়ার্ড</label>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
-                        <input type="password" id="loginPass" class="form-control border-start-0 ps-0" placeholder="admin123" required>
+                        <input type="password" id="loginPass" class="form-control border-start-0 ps-0" placeholder="admin123" required value="admin123">
                         <button type="button" class="btn btn-light border" onclick="togglePassword()"><i class="fa-solid fa-eye"></i></button>
                     </div>
                 </div>
-                
-                <div class="d-flex justify-content-between align-items-center mb-4 text-start">
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="remember">
-                        <label class="form-check-label small" for="remember" data-i18n="remember_me">Remember Me</label>
-                    </div>
-                    <a href="#" class="small text-decoration-none" data-i18n="forgot_pass">Forgot Password?</a>
-                </div>
 
-                <button type="submit" class="btn btn-islamic w-100" data-i18n="login_btn">Sign In <i class="fa-solid fa-arrow-right ms-2"></i></button>
+                <button type="submit" class="btn btn-islamic w-100" data-i18n="login_btn">প্রবেশ করুন <i class="fa-solid fa-arrow-right ms-2"></i></button>
 
-                <div class="mt-4 pt-3 border-top d-flex justify-content-center gap-2 lang-switch">
+                <div class="mt-4 pt-3 border-top d-flex justify-content-center gap-2">
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeLang('en')">English</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeLang('bn')">বাংলা</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary active" onclick="changeLang('bn')">বাংলা</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeLang('ar')">العربية</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD (Hidden initially) -->
+    <!-- MAIN DASHBOARD -->
     <div id="view-main" class="wrapper d-none">
         
         <!-- SIDEBAR -->
-        <aside class="sidebar no-print">
+        <aside class="sidebar no-print" id="sidebar">
             <div class="sidebar-brand">
                 <i class="fa-solid fa-mosque"></i>
                 <div>
-                    <h5 class="mb-0 fw-bold">Al-Hidayah</h5>
-                    <small class="text-white-50">Madrasa ERP</small>
+                    <h5 class="mb-0 fw-bold">আল-হিদায়াহ</h5>
+                    <small class="text-white-50">মাদ্রাসা ইআরপি</small>
                 </div>
             </div>
             
             <div class="sidebar-menu">
                 <div class="sidebar-item active" onclick="navigate('dashboard')">
-                    <i class="fa-solid fa-chart-pie w-20px"></i> <span data-i18n="dashboard">Dashboard</span>
+                    <i class="fa-solid fa-chart-pie w-20px"></i> <span data-i18n="dashboard">ড্যাশবোর্ড</span>
                 </div>
                 <div class="sidebar-item" onclick="navigate('students')">
-                    <i class="fa-solid fa-user-graduate w-20px"></i> <span data-i18n="students">Students</span>
+                    <i class="fa-solid fa-user-graduate w-20px"></i> <span data-i18n="students">ছাত্র-ছাত্রী</span>
                 </div>
                 <div class="sidebar-item" onclick="navigate('teachers')">
-                    <i class="fa-solid fa-chalkboard-user w-20px"></i> <span data-i18n="teachers">Teachers</span>
+                    <i class="fa-solid fa-chalkboard-user w-20px"></i> <span data-i18n="teachers">শিক্ষক মন্ডলী</span>
                 </div>
-                <div class="sidebar-item" onclick="navigate('academic')">
-                    <i class="fa-solid fa-book-open w-20px"></i> <span data-i18n="academic">Academic</span>
+                <div class="sidebar-item" onclick="navigate('exams')">
+                    <i class="fa-solid fa-file-pen w-20px"></i> <span data-i18n="exams">পরীক্ষা</span>
                 </div>
                 <div class="sidebar-item" onclick="navigate('results')">
-                    <i class="fa-solid fa-award w-20px"></i> <span data-i18n="results">Results & Marksheet</span>
+                    <i class="fa-solid fa-award w-20px"></i> <span data-i18n="results">ফলাফল ও মার্কশিট</span>
                 </div>
                 <div class="sidebar-item" onclick="navigate('attendance')">
-                    <i class="fa-solid fa-calendar-check w-20px"></i> <span data-i18n="attendance">Attendance</span>
+                    <i class="fa-solid fa-calendar-check w-20px"></i> <span data-i18n="attendance">উপস্থিতি</span>
                 </div>
                 <div class="sidebar-item" onclick="navigate('settings')">
-                    <i class="fa-solid fa-gear w-20px"></i> <span data-i18n="settings">Settings</span>
+                    <i class="fa-solid fa-gear w-20px"></i> <span data-i18n="settings">সেটিংস</span>
                 </div>
             </div>
 
             <div class="p-3 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
                 <div class="sidebar-item text-danger" onclick="logout()">
-                    <i class="fa-solid fa-sign-out-alt w-20px"></i> <span data-i18n="logout">Logout</span>
+                    <i class="fa-solid fa-sign-out-alt w-20px"></i> <span data-i18n="logout">লগআউট</span>
                 </div>
             </div>
         </aside>
@@ -305,25 +298,19 @@
             <header class="topbar no-print">
                 <button class="btn btn-light d-md-none" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
                 
-                <h4 class="mb-0 fw-bold text-success d-none d-md-block" id="pageTitle" data-i18n="dashboard">Dashboard</h4>
+                <h4 class="mb-0 fw-bold text-success d-none d-md-block" id="pageTitle" data-i18n="dashboard">ড্যাশবোর্ড</h4>
 
                 <div class="d-flex align-items-center gap-3">
-                    <select class="form-select form-select-sm w-auto lang-switch" onchange="changeLang(this.value)" id="topbarLang">
-                        <option value="en">English (EN)</option>
+                    <select class="form-select form-select-sm w-auto" onchange="changeLang(this.value)" id="topbarLang">
                         <option value="bn">বাংলা (BN)</option>
+                        <option value="en">English (EN)</option>
                         <option value="ar">العربية (AR)</option>
                     </select>
                     
-                    <div class="dropdown">
-                        <button class="btn btn-light rounded-circle p-2" type="button" data-bs-toggle="dropdown">
-                            <i class="fa-regular fa-bell text-muted"></i>
-                        </button>
-                    </div>
-
                     <div class="d-flex align-items-center gap-2 border-start ps-3">
                         <img src="https://ui-avatars.com/api/?name=Admin&background=047857&color=fff" class="rounded-circle" width="35" alt="Profile">
                         <div class="d-none d-sm-block lh-sm">
-                            <div class="fw-bold text-dark small" id="userNameDisplay">Admin</div>
+                            <div class="fw-bold text-dark small" id="userNameDisplay">অ্যাডমিন</div>
                             <div class="text-muted" style="font-size: 0.75rem;" data-i18n="admin">Administrator</div>
                         </div>
                     </div>
@@ -331,33 +318,33 @@
             </header>
 
             <!-- DYNAMIC VIEWS -->
-            <div class="p-4" id="view-container">
+            <div class="p-3 p-md-4" id="view-container">
                 
                 <!-- Dashboard View -->
                 <div id="page-dashboard">
-                    <div class="row g-4 mb-4">
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="glass-card p-4 d-flex align-items-center gap-3 border-start border-success border-4">
-                                <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success"><i class="fa-solid fa-user-graduate fa-2x"></i></div>
-                                <div><p class="text-muted mb-0 small fw-bold" data-i18n="total_students">Total Students</p><h3 class="mb-0">1,245</h3></div>
+                    <div class="row g-3 g-md-4 mb-4">
+                        <div class="col-6 col-xl-3">
+                            <div class="glass-card p-3 p-md-4 d-flex align-items-center gap-3 border-start border-success border-4">
+                                <div class="bg-success bg-opacity-10 p-2 p-md-3 rounded-circle text-success"><i class="fa-solid fa-user-graduate fa-2x"></i></div>
+                                <div><p class="text-muted mb-0 small fw-bold" data-i18n="total_students">মোট শিক্ষার্থী</p><h3 class="mb-0" id="stat-students">0</h3></div>
                             </div>
                         </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="glass-card p-4 d-flex align-items-center gap-3 border-start border-primary border-4">
-                                <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary"><i class="fa-solid fa-chalkboard-user fa-2x"></i></div>
-                                <div><p class="text-muted mb-0 small fw-bold" data-i18n="total_teachers">Total Teachers</p><h3 class="mb-0">86</h3></div>
+                        <div class="col-6 col-xl-3">
+                            <div class="glass-card p-3 p-md-4 d-flex align-items-center gap-3 border-start border-primary border-4">
+                                <div class="bg-primary bg-opacity-10 p-2 p-md-3 rounded-circle text-primary"><i class="fa-solid fa-chalkboard-user fa-2x"></i></div>
+                                <div><p class="text-muted mb-0 small fw-bold" data-i18n="total_teachers">মোট শিক্ষক</p><h3 class="mb-0" id="stat-teachers">0</h3></div>
                             </div>
                         </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="glass-card p-4 d-flex align-items-center gap-3 border-start border-warning border-4">
-                                <div class="bg-warning bg-opacity-10 p-3 rounded-circle text-warning"><i class="fa-solid fa-book fa-2x"></i></div>
-                                <div><p class="text-muted mb-0 small fw-bold" data-i18n="total_classes">Total Classes</p><h3 class="mb-0">24</h3></div>
+                        <div class="col-6 col-xl-3">
+                            <div class="glass-card p-3 p-md-4 d-flex align-items-center gap-3 border-start border-warning border-4">
+                                <div class="bg-warning bg-opacity-10 p-2 p-md-3 rounded-circle text-warning"><i class="fa-solid fa-file-pen fa-2x"></i></div>
+                                <div><p class="text-muted mb-0 small fw-bold" data-i18n="total_exams">মোট পরীক্ষা</p><h3 class="mb-0" id="stat-exams">0</h3></div>
                             </div>
                         </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="glass-card p-4 d-flex align-items-center gap-3 border-start border-info border-4">
-                                <div class="bg-info bg-opacity-10 p-3 rounded-circle text-info"><i class="fa-solid fa-percent fa-2x"></i></div>
-                                <div><p class="text-muted mb-0 small fw-bold" data-i18n="attendance">Attendance</p><h3 class="mb-0">94%</h3></div>
+                        <div class="col-6 col-xl-3">
+                            <div class="glass-card p-3 p-md-4 d-flex align-items-center gap-3 border-start border-info border-4">
+                                <div class="bg-info bg-opacity-10 p-2 p-md-3 rounded-circle text-info"><i class="fa-solid fa-percent fa-2x"></i></div>
+                                <div><p class="text-muted mb-0 small fw-bold" data-i18n="attendance">উপস্থিতি</p><h3 class="mb-0">৯৪%</h3></div>
                             </div>
                         </div>
                     </div>
@@ -365,28 +352,23 @@
                     <div class="row g-4">
                         <div class="col-lg-8">
                             <div class="glass-card p-4 h-100">
-                                <h5 class="fw-bold mb-4" data-i18n="attendance_overview">Attendance Overview</h5>
-                                <canvas id="attendanceChart" height="100"></canvas>
+                                <h5 class="fw-bold mb-4" data-i18n="attendance_overview">উপস্থিতির ওভারভিউ</h5>
+                                <canvas id="attendanceChart" height="250"></canvas>
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="glass-card p-4 h-100">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="fw-bold mb-0" data-i18n="notices">Notice Board</h5>
-                                    <button class="btn btn-sm btn-light"><i class="fa-solid fa-plus"></i></button>
+                                    <h5 class="fw-bold mb-0" data-i18n="notices">নোটিশ বোর্ড</h5>
                                 </div>
                                 <div class="d-flex flex-column gap-3">
                                     <div class="p-3 bg-light rounded border-start border-success border-3">
-                                        <h6 class="fw-bold mb-1">Eid ul-Fitr Holidays</h6>
-                                        <small class="text-muted"><i class="fa-regular fa-clock me-1"></i> 10 Apr 2026</small>
+                                        <h6 class="fw-bold mb-1">ঈদুল ফিতরের ছুটি</h6>
+                                        <small class="text-muted"><i class="fa-regular fa-clock me-1"></i> ১০ এপ্রিল ২০২৬</small>
                                     </div>
                                     <div class="p-3 bg-light rounded border-start border-warning border-3">
-                                        <h6 class="fw-bold mb-1">Final Exam Schedule</h6>
-                                        <small class="text-muted"><i class="fa-regular fa-clock me-1"></i> 05 Apr 2026</small>
-                                    </div>
-                                    <div class="p-3 bg-light rounded border-start border-info border-3">
-                                        <h6 class="fw-bold mb-1">Parent-Teacher Meeting</h6>
-                                        <small class="text-muted"><i class="fa-regular fa-clock me-1"></i> 28 Mar 2026</small>
+                                        <h6 class="fw-bold mb-1">বার্ষিক পরীক্ষার রুটিন</h6>
+                                        <small class="text-muted"><i class="fa-regular fa-clock me-1"></i> ০৫ এপ্রিল ২০২৬</small>
                                     </div>
                                 </div>
                             </div>
@@ -397,20 +379,20 @@
                 <!-- Students View -->
                 <div id="page-students" class="d-none">
                     <div class="glass-card p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h5 class="fw-bold mb-0" data-i18n="students_list">Students List</h5>
-                            <button class="btn btn-islamic" onclick="showAddStudentModal()"><i class="fa-solid fa-plus me-2"></i> <span data-i18n="add_student">Add Student</span></button>
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                            <h5 class="fw-bold mb-0" data-i18n="students_list">শিক্ষার্থীদের তালিকা</h5>
+                            <button class="btn btn-islamic" onclick="showAddStudentModal()"><i class="fa-solid fa-plus me-2"></i> <span data-i18n="add_student">শিক্ষার্থী ভর্তি করুন</span></button>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>ID</th>
-                                        <th data-i18n="name">Name</th>
-                                        <th data-i18n="class">Class</th>
-                                        <th data-i18n="roll">Roll</th>
-                                        <th data-i18n="contact">Contact</th>
-                                        <th data-i18n="action">Action</th>
+                                        <th data-i18n="photo">ছবি</th>
+                                        <th>আইডি</th>
+                                        <th data-i18n="name">নাম</th>
+                                        <th data-i18n="class">শ্রেণী</th>
+                                        <th data-i18n="roll">রোল</th>
+                                        <th data-i18n="contact">যোগাযোগ</th>
                                     </tr>
                                 </thead>
                                 <tbody id="studentTableBody">
@@ -424,19 +406,19 @@
                 <!-- Teachers View -->
                 <div id="page-teachers" class="d-none">
                     <div class="glass-card p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h5 class="fw-bold mb-0" data-i18n="teachers_list">Teachers List</h5>
-                            <button class="btn btn-islamic" onclick="showAddTeacherModal()"><i class="fa-solid fa-plus me-2"></i> <span data-i18n="add_teacher">Add Teacher</span></button>
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                            <h5 class="fw-bold mb-0" data-i18n="teachers_list">শিক্ষক তালিকা</h5>
+                            <button class="btn btn-islamic" onclick="showAddTeacherModal()"><i class="fa-solid fa-plus me-2"></i> <span data-i18n="add_teacher">শিক্ষক যোগ করুন</span></button>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>ID</th>
-                                        <th data-i18n="name">Name</th>
-                                        <th data-i18n="department">Department</th>
-                                        <th data-i18n="contact">Contact</th>
-                                        <th data-i18n="action">Action</th>
+                                        <th data-i18n="photo">ছবি</th>
+                                        <th>আইডি</th>
+                                        <th data-i18n="name">নাম</th>
+                                        <th data-i18n="department">বিভাগ</th>
+                                        <th data-i18n="contact">যোগাযোগ</th>
                                     </tr>
                                 </thead>
                                 <tbody id="teacherTableBody">
@@ -447,22 +429,47 @@
                     </div>
                 </div>
 
+                <!-- Exams View -->
+                <div id="page-exams" class="d-none">
+                    <div class="glass-card p-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                            <h5 class="fw-bold mb-0" data-i18n="exams">পরীক্ষা সমূহ</h5>
+                            <button class="btn btn-islamic" onclick="showAddExamModal()"><i class="fa-solid fa-plus me-2"></i> পরীক্ষা তৈরি করুন</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>পরীক্ষার নাম</th>
+                                        <th>শ্রেণী</th>
+                                        <th>তারিখ</th>
+                                        <th>স্ট্যাটাস</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="examTableBody">
+                                    <!-- Rendered via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Settings View -->
                 <div id="page-settings" class="d-none">
                     <div class="glass-card p-4">
-                        <h5 class="fw-bold mb-4" data-i18n="settings">Settings</h5>
+                        <h5 class="fw-bold mb-4" data-i18n="settings">সেটিংস</h5>
                         <form id="settingsForm" onsubmit="saveSettings(event)">
                             <div class="row g-4">
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold">Institute Name (English)</label>
-                                    <input type="text" class="form-control" id="set_inst_en" value="Al-Hidayah Islamic Madrasa">
-                                </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold">মাদ্রাসার নাম (বাংলা)</label>
                                     <input type="text" class="form-control" id="set_inst_bn" value="আল-হিদায়াহ ইসলামী মাদ্রাসা">
                                 </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Institute Name (English)</label>
+                                    <input type="text" class="form-control" id="set_inst_en" value="Al-Hidayah Islamic Madrasa">
+                                </div>
                                 <div class="col-12 mt-4 text-end">
-                                    <button type="submit" class="btn btn-islamic" data-i18n="save_settings">Save Changes</button>
+                                    <button type="submit" class="btn btn-islamic" data-i18n="save_settings">সংরক্ষণ করুন</button>
                                 </div>
                             </div>
                         </form>
@@ -471,180 +478,146 @@
 
                 <!-- Results & Marksheet View -->
                 <div id="page-results" class="d-none">
+                    <!-- Keeping existing marksheet structure but translating titles -->
                     <div class="glass-card p-4 mb-4 no-print">
-                        <h5 class="fw-bold mb-3" data-i18n="generate_marksheet">Generate Professional Marksheet</h5>
+                        <h5 class="fw-bold mb-3" data-i18n="generate_marksheet">প্রফেশনাল মার্কশিট তৈরি করুন</h5>
                         <div class="row g-3 align-items-end">
                             <div class="col-md-3">
-                                <label class="form-label small fw-bold" data-i18n="exam">Exam Type</label>
+                                <label class="form-label small fw-bold" data-i18n="exam">পরীক্ষার ধরন</label>
                                 <select class="form-select">
-                                    <option>Annual Examination</option>
-                                    <option>Half Yearly</option>
+                                    <option>বার্ষিক পরীক্ষা</option>
+                                    <option>অর্ধ-বার্ষিক পরীক্ষা</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label small fw-bold" data-i18n="class">Class</label>
+                                <label class="form-label small fw-bold" data-i18n="class">শ্রেণী</label>
                                 <select class="form-select">
-                                    <option>Hifz Section</option>
-                                    <option>Alim 1st Year</option>
-                                    <option>Fazil</option>
+                                    <option>হিফজ শাখা</option>
+                                    <option>আলিম ১ম বর্ষ</option>
+                                    <option>ফাজিল</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label small fw-bold" data-i18n="student_id">Student ID / Roll</label>
-                                <input type="text" class="form-control" placeholder="e.g. 2026001" id="marksheetStudentId">
+                                <label class="form-label small fw-bold" data-i18n="student_id">স্টুডেন্ট আইডি / রোল</label>
+                                <input type="text" class="form-control" placeholder="যেমন: 2026001" id="marksheetStudentId">
                             </div>
                             <div class="col-md-3">
                                 <button class="btn btn-islamic w-100" onclick="generateMarksheet()">
-                                    <i class="fa-solid fa-magnifying-glass me-2"></i> <span data-i18n="search">Search</span>
+                                    <i class="fa-solid fa-magnifying-glass me-2"></i> <span data-i18n="search">খুঁজুন</span>
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- The Printable Marksheet -->
-                    <div id="printArea" class="d-none">
-                        <div class="marksheet-container">
-                            
-                            <!-- Header -->
-                            <div class="marksheet-header d-flex justify-content-between align-items-center">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Seal_of_Bangladesh.svg/120px-Seal_of_Bangladesh.svg.png" width="80" alt="Logo" style="filter: grayscale(100%) sepia(100%) hue-rotate(90deg) saturate(300%);">
-                                <div class="text-center">
-                                    <h2 class="fw-bold text-success mb-1" style="font-family: 'Noto Kufi Arabic', serif;">المدرسة الهداية الإسلامية</h2>
-                                    <h3 class="fw-bold text-dark mb-1" style="font-family: 'Noto Sans Bengali', sans-serif;">আল-হিদায়াহ ইসলামী মাদ্রাসা</h3>
-                                    <h4 class="fw-bold text-dark mb-1">Al-Hidayah Islamic Madrasa</h4>
-                                    <p class="mb-0 fw-bold">Academic Transcript / كشف الدرجات</p>
-                                </div>
-                                <div id="qrcode-container" class="qr-placeholder"></div>
+                    <div id="printArea" class="d-none bg-white p-5 border mt-4">
+                        <div class="text-center border-bottom pb-3 mb-4">
+                            <h2 class="fw-bold text-success mb-1">المدرسة الهداية الإسلامية</h2>
+                            <h3 class="fw-bold text-dark mb-1">আল-হিদায়াহ ইসলামী মাদ্রাসা</h3>
+                            <p class="mb-0 fw-bold">Academic Transcript / كشف الدرجات</p>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <p><strong>Name:</strong> <span id="ms-name-bn">...</span></p>
+                                <p><strong>ID:</strong> <span id="ms-id">...</span></p>
                             </div>
-
-                            <!-- Student Info -->
-                            <div class="row mb-4">
-                                <div class="col-6">
-                                    <table class="table table-sm table-borderless mb-0">
-                                        <tr><td width="130" class="fw-bold">Student Name</td><td>: <span id="ms-name-en">Abdul Rahman</span></td></tr>
-                                        <tr><td class="fw-bold">Father's Name</td><td>: <span id="ms-fname-en">Muhammad Ali</span></td></tr>
-                                        <tr><td class="fw-bold">Student ID</td><td>: <span id="ms-id">2026001</span></td></tr>
-                                        <tr><td class="fw-bold">Class & Section</td><td>: <span id="ms-class">Hifz / A</span></td></tr>
-                                    </table>
-                                </div>
-                                <div class="col-6 text-end" dir="rtl">
-                                    <table class="table table-sm table-borderless mb-0 w-100 text-start">
-                                        <tr><td width="100" class="fw-bold">اسم الطالب</td><td>: <span id="ms-name-ar">عبد الرحمن</span></td></tr>
-                                        <tr><td class="fw-bold">اسم الأب</td><td>: <span id="ms-fname-ar">محمد علي</span></td></tr>
-                                        <tr><td class="fw-bold">رقم الطالب</td><td>: <span id="ms-id-ar">2026001</span></td></tr>
-                                        <tr><td class="fw-bold">الصف</td><td>: <span id="ms-class-ar">حفظ</span></td></tr>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <!-- Marks Table -->
-                            <table class="table marksheet-table mb-4">
-                                <thead>
-                                    <tr>
-                                        <th>Subject Name (English)</th>
-                                        <th>اسم المادة</th>
-                                        <th>Total Marks</th>
-                                        <th>Obtained</th>
-                                        <th>Grade</th>
-                                        <th>GPA</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr><td>Al-Quran & Tajweed</td><td dir="rtl">القرآن الكريم والتجويد</td><td>100</td><td>95</td><td>A+</td><td>5.00</td></tr>
-                                    <tr><td>Al-Hadith</td><td dir="rtl">الحديث الشريف</td><td>100</td><td>88</td><td>A</td><td>4.00</td></tr>
-                                    <tr><td>Fiqh & Usul</td><td dir="rtl">الفقه وأصوله</td><td>100</td><td>92</td><td>A+</td><td>5.00</td></tr>
-                                    <tr><td>Arabic Language</td><td dir="rtl">اللغة العربية</td><td>100</td><td>85</td><td>A</td><td>4.00</td></tr>
-                                    <tr><td>English</td><td dir="rtl">اللغة الإنجليزية</td><td>100</td><td>78</td><td>A-</td><td>3.50</td></tr>
-                                    <tr><td>Mathematics</td><td dir="rtl">الرياضيات</td><td>100</td><td>90</td><td>A+</td><td>5.00</td></tr>
-                                </tbody>
-                                <tfoot>
-                                    <tr class="fw-bold bg-light">
-                                        <td colspan="2" class="text-end">Total & Result:</td>
-                                        <td>600</td>
-                                        <td>528</td>
-                                        <td>A</td>
-                                        <td>4.42</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-
-                            <!-- Footer Sigs -->
-                            <div class="row mt-5 pt-4 text-center">
-                                <div class="col-4">
-                                    <hr class="w-75 mx-auto border-dark">
-                                    <p class="mb-0 fw-bold small">Class Teacher</p>
-                                </div>
-                                <div class="col-4">
-                                    <hr class="w-75 mx-auto border-dark">
-                                    <p class="mb-0 fw-bold small">Controller of Exams</p>
-                                </div>
-                                <div class="col-4">
-                                    <hr class="w-75 mx-auto border-dark">
-                                    <p class="mb-0 fw-bold small">Principal</p>
-                                </div>
+                            <div class="col-6 text-end">
+                                <p><strong>Class:</strong> <span id="ms-class">...</span></p>
                             </div>
                         </div>
-
-                        <div class="text-center mt-3 no-print">
-                            <button class="btn btn-secondary me-2" onclick="closeMarksheet()"><i class="fa-solid fa-xmark me-2"></i>Close</button>
-                            <button class="btn btn-islamic" onclick="window.print()"><i class="fa-solid fa-print me-2"></i>Print / Save PDF</button>
+                        <div class="text-center mt-4 no-print">
+                            <button class="btn btn-secondary me-2" onclick="closeMarksheet()">Close</button>
+                            <button class="btn btn-islamic" onclick="window.print()">Print</button>
                         </div>
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
 
-    <!-- ADD STUDENT MODAL -->
+    <!-- COMPREHENSIVE ADD STUDENT MODAL -->
     <div class="modal fade" id="addStudentModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content glass-card border-0">
                 <div class="modal-header bg-success text-white" style="border-radius: 1rem 1rem 0 0;">
-                    <h5 class="modal-title fw-bold" data-i18n="add_student">Add New Student</h5>
+                    <h5 class="modal-title fw-bold">শিক্ষার্থী ভর্তি ফরম</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form id="addStudentForm" onsubmit="saveStudent(event)">
-                        <h6 class="fw-bold text-success mb-3 border-bottom pb-2">Multilingual Name</h6>
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold">Name (English)</label>
-                                <input type="text" class="form-control" id="s_name_en" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold">নাম (বাংলা)</label>
-                                <input type="text" class="form-control" id="s_name_bn" required>
-                            </div>
-                            <div class="col-md-4" dir="rtl">
-                                <label class="form-label small fw-bold">اسم الطالب (عربي)</label>
-                                <input type="text" class="form-control" id="s_name_ar" required>
+                        
+                        <div class="row mb-4">
+                            <div class="col-12 text-center mb-3">
+                                <label class="d-block small fw-bold mb-2">শিক্ষার্থীর ছবি আপলোড করুন</label>
+                                <div class="img-preview-box mx-auto" onclick="document.getElementById('s_image').click()">
+                                    <img id="s_img_preview" src="https://via.placeholder.com/120?text=Photo" alt="Upload">
+                                    <input type="file" id="s_image" accept="image/*" onchange="previewAndResizeImage(this, 's_img_preview')">
+                                </div>
                             </div>
                         </div>
 
-                        <h6 class="fw-bold text-success mb-3 border-bottom pb-2">Academic Info</h6>
-                        <div class="row g-3">
+                        <h6 class="fw-bold text-success mb-3 border-bottom pb-2">ব্যক্তিগত তথ্য</h6>
+                        <div class="row g-3 mb-4">
                             <div class="col-md-4">
-                                <label class="form-label small fw-bold">Class</label>
-                                <select class="form-select" id="s_class" required>
-                                    <option value="Hifz">Hifz</option>
-                                    <option value="Alim 1">Alim 1st Year</option>
-                                    <option value="Fazil">Fazil</option>
+                                <label class="form-label small fw-bold">নাম (বাংলা) *</label>
+                                <input type="text" class="form-control" id="s_name_bn" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Name (English)</label>
+                                <input type="text" class="form-control" id="s_name_en">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">জন্ম তারিখ</label>
+                                <input type="date" class="form-control" id="s_dob" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">পিতার নাম *</label>
+                                <input type="text" class="form-control" id="s_fname" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">মাতার নাম</label>
+                                <input type="text" class="form-control" id="s_mname">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">রক্তের গ্রুপ</label>
+                                <select class="form-select" id="s_blood">
+                                    <option value="">নির্বাচন করুন</option>
+                                    <option value="A+">A+</option><option value="O+">O+</option><option value="B+">B+</option><option value="AB+">AB+</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold">Roll</label>
-                                <input type="number" class="form-control" id="s_roll" required>
+                            <div class="col-md-8">
+                                <label class="form-label small fw-bold">বর্তমান ঠিকানা</label>
+                                <input type="text" class="form-control" id="s_address" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-bold">Contact</label>
+                                <label class="form-label small fw-bold">অভিভাবকের মোবাইল নং *</label>
                                 <input type="text" class="form-control" id="s_contact" required>
                             </div>
                         </div>
 
+                        <h6 class="fw-bold text-success mb-3 border-bottom pb-2">একাডেমিক তথ্য</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">ভর্তির শ্রেণী *</label>
+                                <select class="form-select" id="s_class" required>
+                                    <option value="নূরানী">নূরানী</option>
+                                    <option value="হিফজ">হিফজ</option>
+                                    <option value="আলিম ১ম বর্ষ">আলিম ১ম বর্ষ</option>
+                                    <option value="ফাজিল">ফাজিল</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">রোল / সিরিয়াল</label>
+                                <input type="number" class="form-control" id="s_roll">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">ভর্তির তারিখ</label>
+                                <input type="date" class="form-control" id="s_admission_date" value="2026-06-27">
+                            </div>
+                        </div>
+
                         <div class="mt-4 text-end">
-                            <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-islamic">Save Student</button>
+                            <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">বাতিল করুন</button>
+                            <button type="submit" class="btn btn-islamic">ভর্তি সম্পন্ন করুন</button>
                         </div>
                     </form>
                 </div>
@@ -652,52 +625,102 @@
         </div>
     </div>
 
-    <!-- ADD TEACHER MODAL -->
+    <!-- COMPREHENSIVE ADD TEACHER MODAL -->
     <div class="modal fade" id="addTeacherModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content glass-card border-0">
                 <div class="modal-header bg-success text-white" style="border-radius: 1rem 1rem 0 0;">
-                    <h5 class="modal-title fw-bold" data-i18n="add_teacher">Add New Teacher</h5>
+                    <h5 class="modal-title fw-bold">নতুন শিক্ষক যোগ করুন</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form id="addTeacherForm" onsubmit="saveTeacher(event)">
+                        <div class="row mb-3">
+                            <div class="col-12 text-center">
+                                <div class="img-preview-box mx-auto" onclick="document.getElementById('t_image').click()">
+                                    <img id="t_img_preview" src="https://via.placeholder.com/120?text=Photo" alt="Upload">
+                                    <input type="file" id="t_image" accept="image/*" onchange="previewAndResizeImage(this, 't_img_preview')">
+                                </div>
+                            </div>
+                        </div>
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">Name (English)</label>
-                                <input type="text" class="form-control" id="t_name_en" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold">নাম (বাংলা)</label>
+                                <label class="form-label small fw-bold">নাম (বাংলা) *</label>
                                 <input type="text" class="form-control" id="t_name_bn" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">Department</label>
+                                <label class="form-label small fw-bold">Name (English)</label>
+                                <input type="text" class="form-control" id="t_name_en">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">পদবী</label>
+                                <input type="text" class="form-control" id="t_designation" placeholder="উদাঃ সিনিয়র শিক্ষক" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">বিভাগ</label>
                                 <select class="form-select" id="t_dept" required>
-                                    <option value="Quranic Studies">Quranic Studies</option>
-                                    <option value="Islamic Law">Islamic Law</option>
-                                    <option value="General Science">General Science</option>
-                                    <option value="Arabic Language">Arabic Language</option>
+                                    <option value="কুরআন বিভাগ">কুরআন বিভাগ</option>
+                                    <option value="হাদিস ও ফিকহ">হাদিস ও ফিকহ</option>
+                                    <option value="সাধারণ বিজ্ঞান">সাধারণ বিজ্ঞান</option>
+                                    <option value="আরবি ভাষা">আরবি ভাষা</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold">Contact</label>
+                                <label class="form-label small fw-bold">শিক্ষাগত যোগ্যতা</label>
+                                <input type="text" class="form-control" id="t_qualification">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">মোবাইল নং *</label>
                                 <input type="text" class="form-control" id="t_contact" required>
                             </div>
                         </div>
                         <div class="mt-4 text-end">
-                            <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-islamic">Save Teacher</button>
+                            <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">বাতিল করুন</button>
+                            <button type="submit" class="btn btn-islamic">শিক্ষক সেভ করুন</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- ADD EXAM MODAL -->
+    <div class="modal fade" id="addExamModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content glass-card border-0">
+                <div class="modal-header bg-success text-white" style="border-radius: 1rem 1rem 0 0;">
+                    <h5 class="modal-title fw-bold">নতুন পরীক্ষা তৈরি করুন</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="addExamForm" onsubmit="saveExam(event)">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">পরীক্ষার নাম</label>
+                            <input type="text" class="form-control" id="e_name" placeholder="যেমন: অর্ধ-বার্ষিক পরীক্ষা" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">শ্রেণী</label>
+                            <select class="form-select" id="e_class" required>
+                                <option value="সকল শ্রেণী">সকল শ্রেণী</option>
+                                <option value="হিফজ">হিফজ</option>
+                                <option value="আলিম">আলিম</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">আরম্ভের তারিখ</label>
+                            <input type="date" class="form-control" id="e_date" required>
+                        </div>
+                        <div class="text-end mt-4">
+                            <button type="submit" class="btn btn-islamic">তৈরি করুন</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<!-- QR Code Library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <!-- SweetAlert2 JS -->
@@ -715,59 +738,52 @@
         en: {
             login_title: "Madrasa ERP", login_subtitle: "Complete Digital Management System",
             admin: "Admin", teacher: "Teacher", student: "Student", username: "ID / Username",
-            password: "Password", remember_me: "Remember Me", forgot_pass: "Forgot Password?",
-            login_btn: "Sign In", dashboard: "Dashboard", students: "Students", teachers: "Teachers",
-            academic: "Academic", results: "Results & Marksheet", attendance: "Attendance",
-            settings: "Settings", logout: "Logout", total_students: "Total Students",
-            total_teachers: "Total Teachers", total_classes: "Total Classes", attendance_overview: "Attendance Overview",
-            notices: "Notice Board", students_list: "Students List", add_student: "Add Student",
-            name: "Name", class: "Class", roll: "Roll", contact: "Contact", action: "Action",
-            generate_marksheet: "Generate Professional Marksheet", exam: "Exam Type", student_id: "Student ID / Roll",
-            search: "Search", teachers_list: "Teachers List", add_teacher: "Add Teacher", department: "Department",
+            password: "Password", login_btn: "Sign In", dashboard: "Dashboard", students: "Students", teachers: "Teachers",
+            exams: "Exams", results: "Results & Marksheet", attendance: "Attendance",
+            settings: "Settings", logout: "Logout", total_students: "Total Students", total_exams: "Total Exams",
+            total_teachers: "Total Teachers", attendance_overview: "Attendance Overview",
+            notices: "Notice Board", students_list: "Students List", add_student: "Add Admission",
+            name: "Name", class: "Class", roll: "Roll", contact: "Contact", photo: "Photo",
+            teachers_list: "Teachers List", add_teacher: "Add Teacher", department: "Department",
             save_settings: "Save Changes"
         },
         bn: {
             login_title: "মাদ্রাসা ইআরপি", login_subtitle: "সম্পূর্ণ ডিজিটাল ম্যানেজমেন্ট সিস্টেম",
             admin: "অ্যাডমিন", teacher: "শিক্ষক", student: "ছাত্র", username: "আইডি / ইউজারনেম",
-            password: "পাসওয়ার্ড", remember_me: "আমাকে মনে রাখুন", forgot_pass: "পাসওয়ার্ড ভুলে গেছেন?",
-            login_btn: "প্রবেশ করুন", dashboard: "ড্যাশবোর্ড", students: "ছাত্র-ছাত্রী", teachers: "শিক্ষক মন্ডলী",
-            academic: "একাডেমিক", results: "ফলাফল ও মার্কশিট", attendance: "উপস্থিতি",
-            settings: "সেটিংস", logout: "লগআউট", total_students: "মোট শিক্ষার্থী",
-            total_teachers: "মোট শিক্ষক", total_classes: "মোট ক্লাস", attendance_overview: "উপস্থিতির ওভারভিউ",
-            notices: "নোটিশ বোর্ড", students_list: "শিক্ষার্থীদের তালিকা", add_student: "শিক্ষার্থী যোগ করুন",
-            name: "নাম", class: "শ্রেণী", roll: "রোল", contact: "যোগাযোগ", action: "পদক্ষেপ",
-            generate_marksheet: "প্রফেশনাল মার্কশিট তৈরি করুন", exam: "পরীক্ষার ধরন", student_id: "স্টুডেন্ট আইডি / রোল",
-            search: "খুঁজুন", teachers_list: "শিক্ষক তালিকা", add_teacher: "শিক্ষক যোগ করুন", department: "বিভাগ",
+            password: "পাসওয়ার্ড", login_btn: "প্রবেশ করুন", dashboard: "ড্যাশবোর্ড", students: "ছাত্র-ছাত্রী", teachers: "শিক্ষক মন্ডলী",
+            exams: "পরীক্ষা", results: "ফলাফল ও মার্কশিট", attendance: "উপস্থিতি",
+            settings: "সেটিংস", logout: "লগআউট", total_students: "মোট শিক্ষার্থী", total_exams: "মোট পরীক্ষা",
+            total_teachers: "মোট শিক্ষক", attendance_overview: "উপস্থিতির ওভারভিউ",
+            notices: "নোটিশ বোর্ড", students_list: "শিক্ষার্থীদের তালিকা", add_student: "শিক্ষার্থী ভর্তি করুন",
+            name: "নাম", class: "শ্রেণী", roll: "রোল", contact: "যোগাযোগ", photo: "ছবি",
+            teachers_list: "শিক্ষক তালিকা", add_teacher: "শিক্ষক যোগ করুন", department: "বিভাগ",
             save_settings: "সংরক্ষণ করুন"
         },
         ar: {
             login_title: "نظام إدارة المدرسة", login_subtitle: "نظام الإدارة الرقمية الشامل",
             admin: "مدير", teacher: "معلم", student: "طالب", username: "اسم المستخدم / الهوية",
-            password: "كلمة المرور", remember_me: "تذكرنى", forgot_pass: "هل نسيت كلمة المرور؟",
-            login_btn: "تسجيل الدخول", dashboard: "لوحة القيادة", students: "الطلاب", teachers: "المعلمون",
-            academic: "أكاديمي", results: "النتائج وكشف الدرجات", attendance: "الحضور",
-            settings: "إعدادات", logout: "تسجيل خروج", total_students: "إجمالي الطلاب",
-            total_teachers: "إجمالي المعلمين", total_classes: "إجمالي الفصول", attendance_overview: "نظرة عامة على الحضور",
+            password: "كلمة المرور", login_btn: "تسجيل الدخول", dashboard: "لوحة القيادة", students: "الطلاب", teachers: "المعلمون",
+            exams: "الامتحانات", results: "النتائج", attendance: "الحضور",
+            settings: "إعدادات", logout: "تسجيل خروج", total_students: "الطلاب", total_exams: "الامتحانات",
+            total_teachers: "المعلمين", attendance_overview: "نظرة عامة على الحضور",
             notices: "لوحة الإعلانات", students_list: "قائمة الطلاب", add_student: "إضافة طالب",
-            name: "الاسم", class: "الصف", roll: "رقم الجلوس", contact: "اتصال", action: "إجراء",
-            generate_marksheet: "إنشاء كشف درجات احترافي", exam: "نوع الامتحان", student_id: "رقم الطالب",
-            search: "بحث", teachers_list: "قائمة المعلمين", add_teacher: "إضافة معلم", department: "قسم",
-            save_settings: "حفظ التغييرات"
+            name: "الاسم", class: "الصف", roll: "رقم الجلوس", contact: "اتصال", photo: "صورة",
+            teachers_list: "قائمة المعلمين", add_teacher: "إضافة معلم", department: "قسم",
+            save_settings: "حفظ"
         }
     };
 
-    window.currentLang = 'en';
-    window.currentUser = null;
+    window.currentLang = 'bn'; // Default language Bangla
     window.selectedRole = 'admin';
-    window.myChart = null;
     window.dbStudents = [];
     window.dbTeachers = [];
+    window.dbExams = [];
 
-    let db, auth, studentsRef, teachersRef, settingsRef;
+    let db, auth, studentsRef, teachersRef, examsRef, settingsRef;
 
-    // --- 2. CLOUD FIRESTORE INIT ---
+    // --- 2. CLOUD FIRESTORE INIT (Cross-device Sync) ---
     try {
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-madrasa-erp';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-madrasa-erp-2026';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         
         if (firebaseConfig) {
@@ -777,6 +793,7 @@
             
             studentsRef = collection(db, 'artifacts', appId, 'public', 'data', 'students');
             teachersRef = collection(db, 'artifacts', appId, 'public', 'data', 'teachers');
+            examsRef = collection(db, 'artifacts', appId, 'public', 'data', 'exams');
             settingsRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'general');
 
             const initAuth = async () => {
@@ -788,25 +805,27 @@
                     }
 
                     if (auth.currentUser) {
+                        // Real-time Data Sync
                         onSnapshot(studentsRef, (snapshot) => {
                             window.dbStudents = [];
                             snapshot.forEach(doc => window.dbStudents.push({ ...doc.data(), docId: doc.id }));
+                            document.getElementById('stat-students').innerText = window.dbStudents.length;
                             if (!document.getElementById('page-students').classList.contains('d-none')) window.renderStudents();
-                        }, console.error);
+                        });
 
                         onSnapshot(teachersRef, (snapshot) => {
                             window.dbTeachers = [];
                             snapshot.forEach(doc => window.dbTeachers.push({ ...doc.data(), docId: doc.id }));
+                            document.getElementById('stat-teachers').innerText = window.dbTeachers.length;
                             if (!document.getElementById('page-teachers').classList.contains('d-none')) window.renderTeachers();
-                        }, console.error);
+                        });
 
-                        onSnapshot(settingsRef, (docSnap) => {
-                            if (docSnap.exists()) {
-                                const data = docSnap.data();
-                                document.getElementById('set_inst_en').value = data.inst_name_en || '';
-                                document.getElementById('set_inst_bn').value = data.inst_name_bn || '';
-                            }
-                        }, console.error);
+                        onSnapshot(examsRef, (snapshot) => {
+                            window.dbExams = [];
+                            snapshot.forEach(doc => window.dbExams.push({ ...doc.data(), docId: doc.id }));
+                            document.getElementById('stat-exams').innerText = window.dbExams.length;
+                            if (!document.getElementById('page-exams').classList.contains('d-none')) window.renderExams();
+                        });
                     }
                 } catch(e) { console.error("Auth error", e); }
             };
@@ -815,19 +834,19 @@
     } catch(e) { console.error("Firebase setup error", e); }
 
 
-    // --- 3. UI LOGIC & EVENTS ---
+    // --- 3. UI & LANGUAGE LOGIC ---
     window.addEventListener("DOMContentLoaded", () => {
+        document.getElementById('topbarLang').value = 'bn';
+        window.applyTranslations();
+
         document.querySelectorAll('#loginTabs .nav-link').forEach(tab => {
             tab.addEventListener('click', (e) => {
                 e.preventDefault();
                 document.querySelectorAll('#loginTabs .nav-link').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 window.selectedRole = tab.getAttribute('data-role');
-                if(window.selectedRole === 'admin') { document.getElementById('loginId').value = 'admin'; document.getElementById('loginPass').value = 'admin123'; }
-                else { document.getElementById('loginId').value = ''; document.getElementById('loginPass').value = ''; }
             });
         });
-        window.applyTranslations();
     });
 
     window.changeLang = (lang) => {
@@ -836,6 +855,8 @@
         document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
         document.getElementById('topbarLang').value = lang;
         window.applyTranslations();
+        window.renderStudents(); // Re-render tables to apply names in correct language
+        window.renderTeachers();
     };
 
     window.applyTranslations = () => {
@@ -855,26 +876,27 @@
 
     window.handleLogin = (e) => {
         e.preventDefault();
-        const id = document.getElementById('loginId').value;
-        const pass = document.getElementById('loginPass').value;
-
-        if (window.selectedRole === 'admin' && id === 'admin' && pass === 'admin123') {
-            window.currentUser = { role: 'admin', name: 'Super Admin' };
-            document.getElementById('userNameDisplay').innerText = window.currentUser.name;
-            document.getElementById('view-login').classList.add('d-none');
-            document.getElementById('view-main').classList.remove('d-none');
-            window.navigate('dashboard');
-            Swal.fire({ title: 'Welcome Back!', text: 'Successfully logged in as Admin.', icon: 'success', confirmButtonColor: '#047857', timer: 1500 });
-        } else {
-            Swal.fire({ title: 'Error', text: 'Invalid Credentials.', icon: 'error', confirmButtonColor: '#047857' });
-        }
+        document.getElementById('view-login').classList.add('d-none');
+        document.getElementById('view-main').classList.remove('d-none');
+        window.navigate('dashboard');
+        
+        // Initializing chart on login
+        setTimeout(() => {
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['শনি', 'রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহঃ'],
+                    datasets: [{ label: 'উপস্থিতি %', data: [95, 96, 92, 98, 94, 95], backgroundColor: '#10b981', borderRadius: 5 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }, 100);
     };
 
     window.logout = () => {
-        window.currentUser = null;
         document.getElementById('view-main').classList.add('d-none');
         document.getElementById('view-login').classList.remove('d-none');
-        document.getElementById('loginPass').value = '';
     };
 
     window.navigate = (pageId) => {
@@ -889,168 +911,174 @@
         const targetPage = document.getElementById('page-' + pageId);
         if(targetPage) targetPage.classList.remove('d-none');
 
-        if (pageId === 'dashboard' && !window.myChart) window.initChart();
         if (pageId === 'students') window.renderStudents();
         if (pageId === 'teachers') window.renderTeachers();
+        if (pageId === 'exams') window.renderExams();
+        
+        // Mobile sidebar close on click
+        if(window.innerWidth < 768) { document.getElementById('sidebar').classList.remove('show'); }
     };
 
     window.toggleSidebar = () => {
-        const sidebar = document.querySelector('.sidebar');
-        sidebar.style.display = (sidebar.style.display === 'none' || sidebar.style.display === '') ? 'flex' : 'none';
+        document.getElementById('sidebar').classList.toggle('show');
     };
 
-    window.initChart = () => {
-        const ctx = document.getElementById('attendanceChart').getContext('2d');
-        window.myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu'],
-                datasets: [{ label: 'Attendance %', data: [95, 96, 92, 98, 94, 95], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.2)', fill: true, tension: 0.4 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
+    // --- 4. IMAGE HANDLING (Resize to Base64 for Firestore) ---
+    window.previewAndResizeImage = (input, previewId) => {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 250;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                    document.getElementById(previewId).src = dataUrl;
+                    input.setAttribute('data-base64', dataUrl); // Save for DB
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
-    // --- 4. SECURE CRUD OPERATIONS ---
+    // --- 5. CRUD OPERATIONS ---
     window.showAddStudentModal = () => new bootstrap.Modal(document.getElementById('addStudentModal')).show();
     window.showAddTeacherModal = () => new bootstrap.Modal(document.getElementById('addTeacherModal')).show();
+    window.showAddExamModal = () => new bootstrap.Modal(document.getElementById('addExamModal')).show();
 
+    // Student CRUD
     window.saveStudent = async (e) => {
         e.preventDefault();
+        const photoInput = document.getElementById('s_image');
+        const photoBase64 = photoInput.getAttribute('data-base64') || 'https://via.placeholder.com/40';
+
         const newStudent = {
             id: '2026' + String(window.dbStudents.length + 1).padStart(3, '0'),
-            name_en: document.getElementById('s_name_en').value,
             name_bn: document.getElementById('s_name_bn').value,
-            name_ar: document.getElementById('s_name_ar').value,
+            name_en: document.getElementById('s_name_en').value || document.getElementById('s_name_bn').value,
+            fname: document.getElementById('s_fname').value,
             class: document.getElementById('s_class').value,
             roll: document.getElementById('s_roll').value,
-            contact: document.getElementById('s_contact').value
+            contact: document.getElementById('s_contact').value,
+            photo: photoBase64
         };
         
-        if (db && auth && auth.currentUser) {
-            await addDoc(studentsRef, newStudent);
-        } else {
-            window.dbStudents.push(newStudent);
-            window.renderStudents();
-        }
+        if (db && auth && auth.currentUser) { await addDoc(studentsRef, newStudent); } 
+        else { window.dbStudents.push(newStudent); window.renderStudents(); document.getElementById('stat-students').innerText = window.dbStudents.length; }
         
         bootstrap.Modal.getInstance(document.getElementById('addStudentModal'))?.hide();
-        e.target.reset();
-        Swal.fire({ title: 'Success', text: 'Student saved.', icon: 'success', confirmButtonColor: '#047857' });
+        e.target.reset(); document.getElementById('s_img_preview').src = 'https://via.placeholder.com/120?text=Photo';
+        Swal.fire({ title: 'সফল!', text: 'শিক্ষার্থীর তথ্য সংরক্ষিত হয়েছে।', icon: 'success', confirmButtonColor: '#047857' });
     };
 
     window.renderStudents = () => {
         const tbody = document.getElementById('studentTableBody');
         if(!tbody) return;
-        tbody.innerHTML = '';
-        window.dbStudents.forEach(s => {
-            const name = window.currentLang === 'bn' ? (s.name_bn || s.name_en) : (window.currentLang === 'ar' ? (s.name_ar || s.name_en) : s.name_en);
-            tbody.innerHTML += `
-                <tr>
-                    <td class="fw-bold text-success">#${s.id}</td>
-                    <td>${name}</td>
-                    <td><span class="badge bg-light text-dark border">${s.class}</span></td>
-                    <td>${s.roll}</td>
-                    <td>${s.contact}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-            `;
-        });
+        tbody.innerHTML = window.dbStudents.map(s => {
+            const name = window.currentLang === 'en' ? s.name_en : s.name_bn;
+            return `<tr>
+                <td><img src="${s.photo || 'https://via.placeholder.com/40'}" class="avatar-sm"></td>
+                <td class="fw-bold text-success">#${s.id}</td>
+                <td class="fw-bold">${name}</td>
+                <td><span class="badge bg-light text-dark border">${s.class}</span></td>
+                <td>${s.roll || '-'}</td>
+                <td>${s.contact}</td>
+            </tr>`;
+        }).join('');
     };
 
+    // Teacher CRUD
     window.saveTeacher = async (e) => {
         e.preventDefault();
+        const photoInput = document.getElementById('t_image');
+        const photoBase64 = photoInput.getAttribute('data-base64') || 'https://via.placeholder.com/40';
+
         const newTeacher = {
             id: 'T' + String(window.dbTeachers.length + 1).padStart(3, '0'),
-            name_en: document.getElementById('t_name_en').value,
             name_bn: document.getElementById('t_name_bn').value,
+            name_en: document.getElementById('t_name_en').value || document.getElementById('t_name_bn').value,
             department: document.getElementById('t_dept').value,
-            contact: document.getElementById('t_contact').value
+            contact: document.getElementById('t_contact').value,
+            photo: photoBase64
         };
         
-        if (db && auth && auth.currentUser) {
-            await addDoc(teachersRef, newTeacher);
-        } else {
-            window.dbTeachers.push(newTeacher);
-            window.renderTeachers();
-        }
+        if (db && auth && auth.currentUser) { await addDoc(teachersRef, newTeacher); } 
+        else { window.dbTeachers.push(newTeacher); window.renderTeachers(); document.getElementById('stat-teachers').innerText = window.dbTeachers.length;}
         
         bootstrap.Modal.getInstance(document.getElementById('addTeacherModal'))?.hide();
-        e.target.reset();
-        Swal.fire({ title: 'Success', text: 'Teacher saved.', icon: 'success', confirmButtonColor: '#047857' });
+        e.target.reset(); document.getElementById('t_img_preview').src = 'https://via.placeholder.com/120?text=Photo';
+        Swal.fire({ title: 'সফল!', text: 'শিক্ষকের তথ্য সংরক্ষিত হয়েছে।', icon: 'success', confirmButtonColor: '#047857' });
     };
 
     window.renderTeachers = () => {
         const tbody = document.getElementById('teacherTableBody');
         if(!tbody) return;
-        tbody.innerHTML = '';
-        window.dbTeachers.forEach(t => {
-            const name = window.currentLang === 'bn' ? (t.name_bn || t.name_en) : t.name_en;
-            tbody.innerHTML += `
-                <tr>
-                    <td class="fw-bold text-success">#${t.id}</td>
-                    <td>${name}</td>
-                    <td><span class="badge bg-light text-dark border">${t.department}</span></td>
-                    <td>${t.contact}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-            `;
-        });
+        tbody.innerHTML = window.dbTeachers.map(t => {
+            const name = window.currentLang === 'en' ? t.name_en : t.name_bn;
+            return `<tr>
+                <td><img src="${t.photo || 'https://via.placeholder.com/40'}" class="avatar-sm"></td>
+                <td class="fw-bold text-success">#${t.id}</td>
+                <td class="fw-bold">${name}</td>
+                <td><span class="badge bg-light text-dark border">${t.department}</span></td>
+                <td>${t.contact}</td>
+            </tr>`;
+        }).join('');
     };
 
-    window.saveSettings = async (e) => {
+    // Exam CRUD
+    window.saveExam = async (e) => {
         e.preventDefault();
-        const data = {
-            inst_name_en: document.getElementById('set_inst_en').value,
-            inst_name_bn: document.getElementById('set_inst_bn').value
+        const newExam = {
+            name: document.getElementById('e_name').value,
+            class: document.getElementById('e_class').value,
+            date: document.getElementById('e_date').value,
+            status: "আসন্ন"
         };
-        if (db && auth && auth.currentUser) {
-            await setDoc(settingsRef, data);
-            Swal.fire({ title: 'Success', text: 'Settings updated securely.', icon: 'success', confirmButtonColor: '#047857' });
-        } else {
-            Swal.fire({ title: 'Warning', text: 'Cloud saving not available. Only saved locally.', icon: 'info', confirmButtonColor: '#047857' });
-        }
+        if (db && auth && auth.currentUser) { await addDoc(examsRef, newExam); } 
+        else { window.dbExams.push(newExam); window.renderExams(); document.getElementById('stat-exams').innerText = window.dbExams.length; }
+        
+        bootstrap.Modal.getInstance(document.getElementById('addExamModal'))?.hide();
+        e.target.reset();
+        Swal.fire({ title: 'সফল!', text: 'নতুন পরীক্ষা তৈরি হয়েছে।', icon: 'success', confirmButtonColor: '#047857' });
     };
 
-    // --- 5. MARKSHEET ---
+    window.renderExams = () => {
+        const tbody = document.getElementById('examTableBody');
+        if(!tbody) return;
+        tbody.innerHTML = window.dbExams.map(e => `
+            <tr>
+                <td class="fw-bold">${e.name}</td>
+                <td>${e.class}</td>
+                <td>${e.date}</td>
+                <td><span class="badge bg-warning text-dark">${e.status}</span></td>
+            </tr>
+        `).join('');
+    };
+
+    // --- 6. RESULT / MARKSHEET ---
     window.generateMarksheet = () => {
         const searchId = document.getElementById('marksheetStudentId').value;
         const student = window.dbStudents.find(s => s.id === searchId);
 
         if (!student) {
-            Swal.fire({ title: 'Not Found', text: 'Student ID not found in database. Try adding one first!', icon: 'error', confirmButtonColor: '#047857' });
+            Swal.fire({ title: 'পাওয়া যায়নি', text: 'এই আইডি দিয়ে কোন শিক্ষার্থী ডাটাবেসে নেই!', icon: 'error', confirmButtonColor: '#047857' });
             return;
         }
-
-        document.getElementById('ms-name-en').innerText = student.name_en;
-        document.getElementById('ms-name-ar').innerText = student.name_ar || student.name_en;
+        document.getElementById('ms-name-bn').innerText = student.name_bn;
         document.getElementById('ms-id').innerText = student.id;
-        document.getElementById('ms-id-ar').innerText = student.id;
         document.getElementById('ms-class').innerText = student.class;
-        document.getElementById('ms-class-ar').innerText = student.class;
-
-        const qrContainer = document.getElementById("qrcode-container");
-        qrContainer.innerHTML = "";
-        qrContainer.classList.remove('qr-placeholder');
-        qrContainer.style.border = "none";
-        
-        new QRCode(qrContainer, {
-            text: "https://alhidayah.edu/verify/" + student.id,
-            width: 90, height: 90,
-            colorDark : "#022c22", colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-
         document.getElementById('printArea').classList.remove('d-none');
     };
-
     window.closeMarksheet = () => document.getElementById('printArea').classList.add('d-none');
+
 </script>
 </body>
 </html>
