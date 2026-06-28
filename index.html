@@ -1,551 +1,590 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="bn" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Madrasa ERP | Premium Management System</title>
     
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS (via CDN for single file) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700&family=Noto+Sans+Bengali:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50: '#ecfdf5', 100: '#d1fae5', 500: '#10b981', 600: '#059669', 700: '#047857', 900: '#064e3b' },
+                        dark: { bg: '#0f172a', card: '#1e293b', border: '#334155', text: '#f1f5f9', muted: '#94a3b8' }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'Noto Sans Bengali', 'sans-serif'],
+                        arabic: ['Noto Kufi Arabic', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        :root {
-            /* Light Theme Variables */
-            --primary-dark: #022c22;
-            --primary: #047857;
-            --primary-light: #10b981;
-            --bg-body: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --sidebar-bg: #022c22;
-            --sidebar-text: #e2e8f0;
-            
-            --glass-bg: rgba(255, 255, 255, 0.95);
-        }
-
-        [data-theme="dark"] {
-            /* Dark Theme Variables */
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-        }
-
-        body {
-            font-family: 'Poppins', 'Noto Sans Bengali', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            transition: all 0.3s ease;
-            overflow-x: hidden;
-        }
-
+        /* Custom Base Styles */
+        body { transition: background-color 0.3s, color 0.3s; overflow-x: hidden; }
         body[lang="ar"] { font-family: 'Noto Kufi Arabic', sans-serif; }
-
-        /* Typography & Utilities */
-        a { text-decoration: none; color: var(--primary); }
-        .text-primary-custom { color: var(--primary) !important; }
-        .bg-primary-custom { background-color: var(--primary) !important; color: white; }
         
-        /* Premium Cards */
-        .premium-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .premium-card:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
+        /* Dark Mode Overrides */
+        .dark body { background-color: theme('colors.dark.bg'); color: theme('colors.dark.text'); }
+        .dark .glass-card { background: theme('colors.dark.card'); border-color: theme('colors.dark.border'); }
+        .dark .sidebar { background: theme('colors.dark.card'); border-right: 1px solid theme('colors.dark.border'); }
+        .dark input, .dark select, .dark textarea { background-color: theme('colors.dark.bg'); color: white; border-color: theme('colors.dark.border'); }
+        .dark .table-header { background-color: theme('colors.dark.bg'); color: theme('colors.dark.text'); }
+        .dark tr { border-bottom-color: theme('colors.dark.border'); }
+        .dark tr:hover { background-color: rgba(255,255,255,0.05); }
 
-        /* Form Elements */
-        .form-control, .form-select {
-            background-color: var(--bg-body);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            border-radius: 0.5rem;
-        }
-        .form-control:focus, .form-select:focus {
-            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
-            border-color: var(--primary-light);
-            background-color: var(--bg-card);
-            color: var(--text-main);
-        }
+        /* Light Mode Elements */
+        .glass-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: transform 0.2s, box-shadow 0.2s; }
+        .glass-card:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .sidebar { background: #064e3b; color: #e2e8f0; }
+        .table-header { background-color: #f8fafc; }
 
-        /* Buttons */
-        .btn-islamic {
-            background: linear-gradient(135deg, var(--primary), #059669);
-            color: white;
-            border: none;
-            border-radius: 0.5rem;
-            padding: 0.6rem 1.5rem;
-            font-weight: 600;
-        }
-        .btn-islamic:hover {
-            background: linear-gradient(135deg, #059669, var(--primary-dark));
-            color: white;
-            transform: translateY(-2px);
-        }
+        /* Form Controls */
+        .form-input { width: 100%; padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1px solid #cbd5e1; outline: none; transition: border-color 0.2s; }
+        .form-input:focus { border-color: theme('colors.primary.500'); ring: 2px; }
 
-        /* Login Screen */
-        .login-wrapper {
-            min-height: 100vh;
-            display: flex;
-            background: var(--bg-body);
-        }
-        .login-banner {
-            flex: 1;
-            background: linear-gradient(rgba(2, 44, 34, 0.8), rgba(4, 120, 87, 0.8)), url('https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80') center/cover;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            padding: 3rem;
-            text-align: center;
-        }
-        .login-form-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            max-width: 600px;
-            width: 100%;
-            margin: auto;
-        }
-        @media (max-width: 768px) { .login-banner { display: none; } }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
 
-        /* Layout & Sidebar */
-        .wrapper { display: flex; height: 100vh; overflow: hidden; }
+        /* Sidebar Item */
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem; cursor: pointer; transition: all 0.2s; border-left: 4px solid transparent; }
+        [dir="rtl"] .nav-item { border-left: none; border-right: 4px solid transparent; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left-color: theme('colors.primary.400'); }
+        [dir="rtl"] .nav-item:hover, [dir="rtl"] .nav-item.active { border-right-color: theme('colors.primary.400'); }
         
-        .sidebar {
-            width: 280px;
-            background: var(--sidebar-bg);
-            color: var(--sidebar-text);
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: -280px;
-                height: 100%;
-            }
-            .sidebar.show {
-                left: 0;
-            }
-            .sidebar-overlay {
-                display: none;
-                position: fixed;
-                top: 0; left: 0; right: 0; bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 999;
-            }
-            .sidebar-overlay.show { display: block; }
-        }
-
-        .sidebar-brand { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 1rem; }
-        .sidebar-menu { flex: 1; overflow-y: auto; padding: 1rem 0; }
-        
-        .sidebar-item {
-            padding: 0.8rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            color: var(--sidebar-text);
-            transition: all 0.2s;
-            cursor: pointer;
-            font-size: 0.95rem;
-        }
-        .sidebar-item:hover, .sidebar-item.active {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border-left: 4px solid var(--primary-light);
-        }
-        [dir="rtl"] .sidebar-item { border-left: none; border-right: 4px solid transparent; }
-        [dir="rtl"] .sidebar-item:hover, [dir="rtl"] .sidebar-item.active { border-right: 4px solid var(--primary-light); }
-
-        .menu-section {
-            padding: 1rem 1.5rem 0.5rem;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: rgba(255,255,255,0.5);
-            font-weight: 600;
-        }
-
-        /* Main Content & Topbar */
-        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; }
-        .topbar {
-            background: var(--bg-card);
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            z-index: 10;
-        }
-
-        /* Table & Utils */
-        .table { color: var(--text-main); }
-        .d-none { display: none !important; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #059669; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* Print Settings */
         @media print {
-            body * { visibility: hidden; }
-            #printArea, #printArea * { visibility: visible; }
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; border: none; }
             .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+            .glass-card { border: none !important; box-shadow: none !important; }
         }
     </style>
 </head>
-<body data-theme="light" lang="en">
+<body class="bg-slate-50 text-slate-800 transition-colors duration-300" data-theme="light" lang="bn">
 
-<div id="app">
-    <!-- ================= LOGIN SCREEN ================= -->
-    <div id="view-login" class="login-wrapper">
-        <div class="login-banner">
-            <i class="fa-solid fa-mosque fa-4x mb-4 text-warning"></i>
-            <h1 class="fw-bold mb-3 display-5">Al-Hidayah Islamic Madrasa</h1>
-            <p class="lead" data-i18n="login_subtitle">Complete Digital ERP & Management System</p>
+<div id="app-container" class="h-screen flex overflow-hidden">
+    
+    <!-- ================= AUTH SCREEN ================= -->
+    <div id="auth-view" class="fixed inset-0 z-50 flex bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+        <!-- Left Side Image -->
+        <div class="hidden lg:flex flex-1 relative bg-primary-900 overflow-hidden items-center justify-center">
+            <div class="absolute inset-0 bg-black/40 z-10"></div>
+            <img src="https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?q=80&w=1000&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover" alt="Madrasa">
+            <div class="relative z-20 text-center text-white p-10">
+                <i class="fa-solid fa-mosque fa-5x text-yellow-400 mb-6"></i>
+                <h1 class="text-5xl font-bold mb-4">আল-হিদায়াহ ERP</h1>
+                <p class="text-xl text-slate-300" data-i18n="login_subtitle">Production Ready Education Management</p>
+            </div>
         </div>
-        
-        <div class="login-form-container">
-            <div class="premium-card w-100 p-4 p-md-5">
-                <div class="text-center mb-4">
-                    <h3 class="fw-bold text-primary-custom" data-i18n="welcome">Welcome Back</h3>
-                    <p class="text-muted small" data-i18n="login_instruction">Please login to your account</p>
+        <!-- Right Side Login -->
+        <div class="flex-1 flex items-center justify-center p-8">
+            <div class="w-full max-w-md glass-card p-8 rounded-2xl relative">
+                
+                <!-- Lang Toggle inside Login -->
+                <div class="absolute top-4 right-4 flex gap-2">
+                    <button onclick="changeLanguage('bn')" class="text-xs px-2 py-1 rounded bg-slate-200 dark:bg-slate-700 hover:bg-primary-500 hover:text-white transition">BN</button>
+                    <button onclick="changeLanguage('en')" class="text-xs px-2 py-1 rounded bg-slate-200 dark:bg-slate-700 hover:bg-primary-500 hover:text-white transition">EN</button>
+                    <button onclick="changeLanguage('ar')" class="text-xs px-2 py-1 rounded bg-slate-200 dark:bg-slate-700 hover:bg-primary-500 hover:text-white transition">AR</button>
                 </div>
 
-                <!-- Role Tabs (Removed Guardian) -->
-                <ul class="nav nav-pills nav-fill mb-4 p-1 bg-light rounded-pill border" id="loginTabs">
-                    <li class="nav-item"><a class="nav-link active rounded-pill text-white bg-primary-custom" href="#" data-role="admin" data-i18n="admin">Admin</a></li>
-                    <li class="nav-item"><a class="nav-link rounded-pill text-dark" href="#" data-role="teacher" data-i18n="teacher">Teacher</a></li>
-                    <li class="nav-item"><a class="nav-link rounded-pill text-dark" href="#" data-role="student" data-i18n="student">Student</a></li>
-                </ul>
+                <div class="text-center mb-8 mt-4">
+                    <h2 class="text-3xl font-bold text-primary-700 dark:text-primary-400" data-i18n="welcome">স্বাগতম</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-2" data-i18n="login_instruction">অ্যাকাউন্টে লগইন করুন</p>
+                </div>
 
-                <form id="loginForm" onsubmit="handleLogin(event)">
-                    <div class="mb-3">
-                        <label class="form-label text-muted small fw-bold" data-i18n="username">ID / Username</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-transparent"><i class="fa-solid fa-user text-muted"></i></span>
-                            <input type="text" id="loginId" class="form-control border-start-0" placeholder="Enter your ID" required value="admin">
-                        </div>
-                    </div>
+                <!-- Role Tabs -->
+                <div class="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-1 mb-6">
+                    <button class="flex-1 py-2 text-sm font-semibold rounded-md bg-primary-600 text-white shadow" data-i18n="admin">অ্যাডমিন</button>
+                    <button class="flex-1 py-2 text-sm font-semibold rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700" data-i18n="teacher">শিক্ষক</button>
+                    <button class="flex-1 py-2 text-sm font-semibold rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700" data-i18n="student">শিক্ষার্থী</button>
+                </div>
+
+                <form onsubmit="handleLogin(event)">
                     <div class="mb-4">
-                        <label class="form-label text-muted small fw-bold" data-i18n="password">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-transparent"><i class="fa-solid fa-lock text-muted"></i></span>
-                            <input type="password" id="loginPass" class="form-control border-start-0 border-end-0" placeholder="Enter password" required value="admin123">
-                            <button type="button" class="input-group-text bg-transparent" onclick="togglePassword('loginPass')"><i class="fa-solid fa-eye text-muted"></i></button>
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300" data-i18n="username">ইউজারনেম / আইডি</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-user absolute top-3.5 left-3 text-slate-400"></i>
+                            <input type="text" class="form-input pl-10 bg-transparent" value="admin" required>
                         </div>
                     </div>
-                    
-                    <button type="submit" class="btn btn-islamic w-100 mb-3"><span data-i18n="login_btn">Secure Login</span> <i class="fa-solid fa-arrow-right ms-2"></i></button>
-
-                    <!-- Language Switcher -->
-                    <div class="text-center mt-3">
-                        <div class="btn-group btn-group-sm">
-                            <button type="button" class="btn btn-outline-secondary" onclick="changeLanguage('en')">English</button>
-                            <button type="button" class="btn btn-outline-secondary" onclick="changeLanguage('bn')">বাংলা</button>
-                            <button type="button" class="btn btn-outline-secondary" onclick="changeLanguage('ar')">عربي</button>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300" data-i18n="password">পাসওয়ার্ড</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute top-3.5 left-3 text-slate-400"></i>
+                            <input type="password" id="loginPass" class="form-input pl-10 pr-10 bg-transparent" value="admin123" required>
+                            <button type="button" onclick="togglePassword('loginPass')" class="absolute top-3.5 right-3 text-slate-400 hover:text-primary-600"><i class="fa-solid fa-eye"></i></button>
                         </div>
                     </div>
+                    <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:-translate-y-1 shadow-lg">
+                        <span data-i18n="login_btn">লগইন করুন</span> <i class="fa-solid fa-arrow-right-to-bracket ml-2"></i>
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- ================= MAIN DASHBOARD ================= -->
-    <div id="view-main" class="wrapper d-none">
+    <!-- ================= MAIN APP ================= -->
+    <div id="main-app" class="hidden w-full h-full flex">
         
-        <!-- Mobile Sidebar Overlay -->
-        <div class="sidebar-overlay no-print" onclick="toggleSidebar()"></div>
+        <!-- Sidebar Overlay (Mobile) -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
 
-        <!-- SIDEBAR -->
-        <aside class="sidebar no-print" id="mainSidebar">
-            <div class="sidebar-brand">
-                <i class="fa-solid fa-mosque fa-2x text-warning"></i>
-                <div>
-                    <h5 class="mb-0 fw-bold text-white">Al-Hidayah</h5>
-                </div>
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar w-72 flex flex-col h-full fixed lg:relative z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 rtl:translate-x-full lg:rtl:translate-x-0">
+            <div class="p-6 flex items-center gap-3 border-b border-white/10">
+                <i class="fa-solid fa-mosque fa-2x text-yellow-400"></i>
+                <h1 class="text-xl font-bold tracking-wider">ERP SYSTEM</h1>
+                <button class="ml-auto lg:hidden text-white" onclick="toggleSidebar()"><i class="fa-solid fa-times text-xl"></i></button>
             </div>
             
-            <div class="sidebar-menu">
-                <div class="menu-section" data-i18n="main_menu">Main Menu</div>
-                <div class="sidebar-item active" onclick="navigate('dashboard')">
-                    <i class="fa-solid fa-chart-pie w-20px"></i> <span data-i18n="dashboard">Dashboard</span>
-                </div>
-                
-                <div class="menu-section" data-i18n="people">People</div>
-                <div class="sidebar-item" onclick="navigate('students')">
-                    <i class="fa-solid fa-user-graduate w-20px"></i> <span data-i18n="student_mod">Student Management</span>
-                </div>
-                <div class="sidebar-item" onclick="alertMsg('Teacher Module')">
-                    <i class="fa-solid fa-chalkboard-user w-20px"></i> <span data-i18n="teacher_mod">Teacher Management</span>
-                </div>
-                <div class="sidebar-item" onclick="alertMsg('Staff Module')">
-                    <i class="fa-solid fa-users w-20px"></i> <span data-i18n="staff_mod">Staff Management</span>
+            <div class="flex-1 overflow-y-auto py-4 custom-scrollbar">
+                <div class="px-6 py-2 text-xs font-semibold text-white/50 uppercase tracking-widest" data-i18n="main_menu">মেইন মেনু</div>
+                <div class="nav-item active" onclick="navigate('dashboard', this)">
+                    <i class="fa-solid fa-chart-pie w-6 text-center"></i> <span data-i18n="dashboard">ড্যাশবোর্ড</span>
                 </div>
 
-                <div class="menu-section" data-i18n="academic">Academic</div>
-                <div class="sidebar-item" onclick="alertMsg('Attendance Module')">
-                    <i class="fa-solid fa-calendar-check w-20px"></i> <span data-i18n="attendance">Attendance</span>
+                <div class="px-6 py-2 mt-4 text-xs font-semibold text-white/50 uppercase tracking-widest" data-i18n="people">জনবল</div>
+                <div class="nav-item" onclick="navigate('students', this)">
+                    <i class="fa-solid fa-user-graduate w-6 text-center"></i> <span data-i18n="student_mod">শিক্ষার্থী মডিউল</span>
                 </div>
-                <div class="sidebar-item" onclick="alertMsg('Routine Module')">
-                    <i class="fa-solid fa-clock w-20px"></i> <span data-i18n="routine">Class Routine</span>
+                <div class="nav-item" onclick="navigate('teachers', this)">
+                    <i class="fa-solid fa-chalkboard-user w-6 text-center"></i> <span data-i18n="teacher_mod">শিক্ষক মডিউল</span>
                 </div>
-                <div class="sidebar-item" onclick="alertMsg('Exam Module')">
-                    <i class="fa-solid fa-pen-to-square w-20px"></i> <span data-i18n="exam">Exam Management</span>
-                </div>
-                <div class="sidebar-item" onclick="alertMsg('Result/MarkSheet Module')">
-                    <i class="fa-solid fa-file-lines w-20px"></i> <span data-i18n="result_mark">Result/Mark Sheet</span>
-                </div>
-                <div class="sidebar-item" onclick="alertMsg('Certificate Module')">
-                    <i class="fa-solid fa-certificate w-20px"></i> <span data-i18n="certificates">Certificates</span>
+                <div class="nav-item" onclick="alertMsg('Guardian Module')">
+                    <i class="fa-solid fa-users w-6 text-center"></i> <span data-i18n="guardian_mod">অভিভাবক মডিউল</span>
                 </div>
 
-                <div class="menu-section" data-i18n="administration">Administration</div>
-                <div class="sidebar-item" onclick="alertMsg('Fee Module')">
-                    <i class="fa-solid fa-money-check-dollar w-20px"></i> <span data-i18n="fee">Fee Collection</span>
+                <div class="px-6 py-2 mt-4 text-xs font-semibold text-white/50 uppercase tracking-widest" data-i18n="academic">অ্যাকাডেমিক</div>
+                <div class="nav-item" onclick="alertMsg('Attendance Module')">
+                    <i class="fa-solid fa-calendar-check w-6 text-center"></i> <span data-i18n="attendance">উপস্থিতি</span>
                 </div>
-                <div class="sidebar-item" onclick="alertMsg('Accounts Module')">
-                    <i class="fa-solid fa-calculator w-20px"></i> <span data-i18n="accounts">Accounts</span>
+                <div class="nav-item" onclick="alertMsg('Routine Module')">
+                    <i class="fa-solid fa-clock w-6 text-center"></i> <span data-i18n="routine">ক্লাস রুটিন</span>
                 </div>
-                <div class="sidebar-item" onclick="alertMsg('Library Module')">
-                    <i class="fa-solid fa-book w-20px"></i> <span data-i18n="library">Library</span>
+                <div class="nav-item" onclick="alertMsg('Exam Module')">
+                    <i class="fa-solid fa-pen-to-square w-6 text-center"></i> <span data-i18n="exam">পরীক্ষা মডিউল</span>
                 </div>
-                <div class="sidebar-item" onclick="alertMsg('Assets/Inventory Module')">
-                    <i class="fa-solid fa-boxes-stacked w-20px"></i> <span data-i18n="assets">Assets/Inventory</span>
+                <div class="nav-item" onclick="alertMsg('Certificate Template Module')">
+                    <i class="fa-solid fa-certificate w-6 text-center"></i> <span data-i18n="certificates">সার্টিফিকেট ও টেমপ্লেট</span>
                 </div>
-                
-                <div class="menu-section" data-i18n="system">System</div>
-                <div class="sidebar-item" onclick="alertMsg('Settings')">
-                    <i class="fa-solid fa-gear w-20px"></i> <span data-i18n="settings">Settings & Backup</span>
+
+                <div class="px-6 py-2 mt-4 text-xs font-semibold text-white/50 uppercase tracking-widest" data-i18n="administration">প্রশাসন</div>
+                <div class="nav-item" onclick="alertMsg('Fees Collection')">
+                    <i class="fa-solid fa-money-check-dollar w-6 text-center"></i> <span data-i18n="fee">ফি কালেকশন</span>
+                </div>
+                <div class="nav-item" onclick="alertMsg('Accounting & Ledger')">
+                    <i class="fa-solid fa-calculator w-6 text-center"></i> <span data-i18n="accounts">হিসাবরক্ষণ</span>
+                </div>
+                <div class="nav-item" onclick="alertMsg('Hostel & Transport')">
+                    <i class="fa-solid fa-bus w-6 text-center"></i> <span data-i18n="hostel_transport">হোস্টেল ও পরিবহন</span>
                 </div>
             </div>
 
-            <div class="p-3 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
-                <div class="sidebar-item text-danger" onclick="logout()">
-                    <i class="fa-solid fa-sign-out-alt w-20px"></i> <span data-i18n="logout">Logout</span>
+            <div class="p-4 border-t border-white/10">
+                <div class="nav-item text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg" onclick="logout()">
+                    <i class="fa-solid fa-sign-out-alt w-6 text-center"></i> <span data-i18n="logout">লগআউট</span>
                 </div>
             </div>
         </aside>
 
-        <!-- CONTENT AREA -->
-        <main class="main-content">
-            <!-- TOPBAR -->
-            <header class="topbar no-print">
-                <div class="d-flex align-items-center gap-3">
-                    <button class="btn btn-sm btn-outline-secondary d-md-none" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
-                    <h5 class="mb-0 fw-bold d-none d-sm-block" id="pageTitle" data-i18n="dashboard">Dashboard</h5>
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+            
+            <!-- Topbar -->
+            <header class="h-20 glass-card border-x-0 border-t-0 flex items-center justify-between px-4 lg:px-8 z-10 no-print">
+                <div class="flex items-center gap-4">
+                    <button class="lg:hidden text-slate-500 hover:text-primary-600 dark:text-slate-300" onclick="toggleSidebar()">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                    <h2 class="text-xl font-bold hidden sm:block" id="pageTitle" data-i18n="dashboard">ড্যাশবোর্ড</h2>
                 </div>
 
-                <div class="d-flex align-items-center gap-2 gap-sm-3">
+                <div class="flex items-center gap-3 sm:gap-6">
                     
-                    <!-- Language Select -->
-                    <select class="form-select form-select-sm" style="width: auto;" onchange="changeLanguage(this.value)" id="langSelect">
-                        <option value="en">English</option>
+                    <!-- Search -->
+                    <div class="hidden md:flex relative">
+                        <i class="fa-solid fa-search absolute top-2.5 left-3 text-slate-400"></i>
+                        <input type="text" class="form-input pl-10 py-2 w-64 bg-slate-100 dark:bg-slate-800 border-none rounded-full text-sm" placeholder="Global Search...">
+                    </div>
+
+                    <!-- Language Switcher -->
+                    <select class="form-input py-1.5 text-sm bg-transparent border-slate-300 dark:border-slate-600 rounded-md cursor-pointer" onchange="changeLanguage(this.value)" id="appLangSelect">
                         <option value="bn">বাংলা</option>
+                        <option value="en">English</option>
                         <option value="ar">عربي</option>
                     </select>
 
                     <!-- Theme Toggle -->
-                    <button class="btn btn-sm btn-light rounded-circle" onclick="toggleTheme()" id="themeToggleBtn">
-                        <i class="fa-solid fa-moon text-muted"></i>
+                    <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-yellow-400 hover:bg-slate-200 transition">
+                        <i id="themeIcon" class="fa-solid fa-moon"></i>
+                    </button>
+
+                    <!-- Notification -->
+                    <button class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition relative">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
                     </button>
 
                     <!-- Profile -->
-                    <div class="d-flex align-items-center gap-2 border-start border-secondary ps-2 ps-sm-3">
-                        <img src="https://ui-avatars.com/api/?name=Admin&background=047857&color=fff" class="rounded-circle" width="35" alt="Profile">
-                        <div class="d-none d-sm-block lh-sm">
-                            <div class="fw-bold small">Super Admin</div>
-                            <div class="text-muted" style="font-size: 0.75rem;">Administrator</div>
+                    <div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-700">
+                        <img src="https://ui-avatars.com/api/?name=Super+Admin&background=059669&color=fff" class="w-10 h-10 rounded-full border-2 border-primary-500" alt="Admin">
+                        <div class="hidden sm:block leading-tight">
+                            <div class="font-bold text-sm">Super Admin</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400">System Owner</div>
                         </div>
                     </div>
                 </div>
             </header>
 
-            <!-- DYNAMIC VIEWS CONTAINER -->
-            <div class="p-3 p-md-4" id="view-container">
+            <!-- Scrollable View Container -->
+            <div class="flex-1 overflow-y-auto p-4 lg:p-8 bg-slate-50 dark:bg-slate-900" id="view-container">
                 
-                <!-- 1. DASHBOARD VIEW -->
-                <div id="page-dashboard">
-                    <div class="row g-3 g-md-4 mb-4">
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="premium-card p-3 p-md-4 d-flex align-items-center gap-3 border-start border-success border-4">
-                                <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success"><i class="fa-solid fa-user-graduate fa-2x"></i></div>
-                                <div><p class="text-muted mb-0 small fw-bold" data-i18n="total_students">Total Students</p><h3 class="mb-0 fw-bold" id="dashTotalStudents">0</h3></div>
+                <!-- Firebase Connection Banner -->
+                <div id="dbStatus" class="mb-6 p-4 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800 flex items-center gap-3 shadow-sm no-print">
+                    <div class="loader"></div>
+                    <span class="font-medium" data-i18n="connecting_db">Real-time Database-এ সংযুক্ত করা হচ্ছে...</span>
+                </div>
+
+                <!-- ================= 1. DASHBOARD VIEW ================= -->
+                <div id="page-dashboard" class="page-view animate-fade-in">
+                    
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+                        <div class="glass-card p-6 rounded-2xl flex items-center gap-4 border-l-4 border-l-emerald-500">
+                            <div class="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-2xl">
+                                <i class="fa-solid fa-user-graduate"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium" data-i18n="total_students">মোট শিক্ষার্থী</p>
+                                <h3 class="text-2xl font-bold" id="dashTotalStudents">0</h3>
                             </div>
                         </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="premium-card p-3 p-md-4 d-flex align-items-center gap-3 border-start border-primary border-4">
-                                <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary"><i class="fa-solid fa-chalkboard-user fa-2x"></i></div>
-                                <div><p class="text-muted mb-0 small fw-bold" data-i18n="total_teachers">Total Teachers</p><h3 class="mb-0 fw-bold">86</h3></div>
+                        <div class="glass-card p-6 rounded-2xl flex items-center gap-4 border-l-4 border-l-blue-500">
+                            <div class="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 text-2xl">
+                                <i class="fa-solid fa-chalkboard-user"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium" data-i18n="total_teachers">মোট শিক্ষক</p>
+                                <h3 class="text-2xl font-bold" id="dashTotalTeachers">0</h3>
                             </div>
                         </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="premium-card p-3 p-md-4 d-flex align-items-center gap-3 border-start border-info border-4">
-                                <div class="bg-info bg-opacity-10 p-3 rounded-circle text-info"><i class="fa-solid fa-wallet fa-2x"></i></div>
-                                <div><p class="text-muted mb-0 small fw-bold" data-i18n="collection">Collection</p><h4 class="mb-0 fw-bold">৳ 4,50,000</h4></div>
+                        <div class="glass-card p-6 rounded-2xl flex items-center gap-4 border-l-4 border-l-indigo-500">
+                            <div class="w-14 h-14 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-2xl">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium" data-i18n="today_income">আজকের আয়</p>
+                                <h3 class="text-2xl font-bold">৳ ২৫,০০০</h3>
                             </div>
                         </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="premium-card p-3 p-md-4 d-flex align-items-center gap-3 border-start border-danger border-4">
-                                <div class="bg-danger bg-opacity-10 p-3 rounded-circle text-danger"><i class="fa-solid fa-circle-exclamation fa-2x"></i></div>
-                                <div><p class="text-muted mb-0 small fw-bold" data-i18n="due">Due Fees</p><h4 class="mb-0 fw-bold">৳ 45,000</h4></div>
+                        <div class="glass-card p-6 rounded-2xl flex items-center gap-4 border-l-4 border-l-rose-500">
+                            <div class="w-14 h-14 rounded-full bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center text-rose-600 dark:text-rose-400 text-2xl">
+                                <i class="fa-solid fa-money-bill-transfer"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium" data-i18n="today_expense">আজকের ব্যয়</p>
+                                <h3 class="text-2xl font-bold">৳ ৫,৪০০</h3>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Connection Status -->
-                    <div class="alert alert-info d-flex align-items-center" role="alert" id="dbStatus">
-                        <i class="fa-solid fa-database me-2"></i> 
-                        <span data-i18n="connecting_db">Connecting to Real-time Database...</span>
+                    <!-- Charts & Recent Activity -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="glass-card p-6 rounded-2xl lg:col-span-2">
+                            <h4 class="font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-line text-primary-500"></i> <span data-i18n="fee_summary">ফি কালেকশন সামারি</span></h4>
+                            <div class="relative h-72 w-full">
+                                <canvas id="feeChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="glass-card p-6 rounded-2xl flex flex-col">
+                            <h4 class="font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-bell text-yellow-500"></i> <span data-i18n="recent_activity">সাম্প্রতিক কার্যক্রম</span></h4>
+                            <div class="flex-1 overflow-y-auto pr-2 space-y-4">
+                                <div class="flex gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-plus"></i></div>
+                                    <div><p class="text-sm font-medium">নতুন ভর্তি: <span class="text-primary-600">আব্দুল্লাহ</span></p><p class="text-xs text-slate-500">২ মিনিট আগে</p></div>
+                                </div>
+                                <div class="flex gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-money-bill"></i></div>
+                                    <div><p class="text-sm font-medium">ফি গ্রহণ: ৳ ১৫০০ (রোল: ১০)</p><p class="text-xs text-slate-500">১৫ মিনিট আগে</p></div>
+                                </div>
+                                <div class="flex gap-3 pb-3">
+                                    <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-bullhorn"></i></div>
+                                    <div><p class="text-sm font-medium">নতুন নোটিশ: পরীক্ষার রুটিন</p><p class="text-xs text-slate-500">১ ঘন্টা আগে</p></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 2. STUDENT MANAGEMENT VIEW -->
-                <div id="page-students" class="d-none">
-                    <div class="premium-card p-3 p-md-4">
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-                            <h5 class="fw-bold mb-0" data-i18n="student_dir">Student Directory & Credentials</h5>
-                            <button class="btn btn-sm btn-islamic" onclick="showAddStudentModal()"><i class="fa-solid fa-plus me-1"></i> <span data-i18n="add_student">Add Admission</span></button>
+                <!-- ================= 2. STUDENT MODULE ================= -->
+                <div id="page-students" class="page-view hidden animate-fade-in">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                            <h3 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-users text-primary-600"></i> <span data-i18n="student_dir">শিক্ষার্থী তালিকা</span></h3>
+                            
+                            <div class="flex gap-2">
+                                <button class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 px-4 py-2 rounded-lg font-medium transition flex items-center gap-2" onclick="window.print()">
+                                    <i class="fa-solid fa-print"></i> Print
+                                </button>
+                                <button class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-md flex items-center gap-2" onclick="openModal('studentModal')">
+                                    <i class="fa-solid fa-plus"></i> <span data-i18n="add_student">নতুন ভর্তি</span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
+
+                        <!-- Filters -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <input type="text" id="searchStudent" class="form-input bg-transparent" placeholder="Search by ID or Name..." onkeyup="filterTable('studentTable', this.value)">
+                            <select class="form-input bg-transparent">
+                                <option value="">All Classes</option>
+                                <option value="Hifz">Hifz</option>
+                                <option value="Alim">Alim</option>
+                                <option value="Fazil">Fazil</option>
+                            </select>
+                            <select class="form-input bg-transparent">
+                                <option value="">All Sections</option>
+                                <option value="A">Section A</option>
+                                <option value="B">Section B</option>
+                            </select>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+                            <table class="w-full text-left border-collapse whitespace-nowrap" id="studentTable">
+                                <thead class="table-header">
                                     <tr>
-                                        <th>ID</th>
-                                        <th data-i18n="name">Name</th>
-                                        <th data-i18n="class">Class</th>
-                                        <th data-i18n="contact">Contact</th>
-                                        <th data-i18n="password">Password</th>
-                                        <th data-i18n="action">Action</th>
+                                        <th class="p-4 font-semibold text-sm">ID</th>
+                                        <th class="p-4 font-semibold text-sm" data-i18n="name">নাম</th>
+                                        <th class="p-4 font-semibold text-sm" data-i18n="class">ক্লাস</th>
+                                        <th class="p-4 font-semibold text-sm" data-i18n="contact">মোবাইল</th>
+                                        <th class="p-4 font-semibold text-sm" data-i18n="status">স্ট্যাটাস</th>
+                                        <th class="p-4 font-semibold text-sm no-print" data-i18n="action">অ্যাকশন</th>
                                     </tr>
                                 </thead>
-                                <tbody id="studentTableBody">
-                                    <!-- Populated via JS/Realtime DB -->
+                                <tbody id="studentTableBody" class="divide-y divide-slate-200 dark:divide-slate-700">
+                                    <!-- Populated by Firebase -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+
+                <!-- ================= 3. TEACHER MODULE ================= -->
+                <div id="page-teachers" class="page-view hidden animate-fade-in">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                            <h3 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-chalkboard-user text-primary-600"></i> <span data-i18n="teacher_dir">শিক্ষক তালিকা</span></h3>
+                            <button class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-md flex items-center gap-2" onclick="openModal('teacherModal')">
+                                <i class="fa-solid fa-plus"></i> <span data-i18n="add_teacher">শিক্ষক যোগ করুন</span>
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+                            <table class="w-full text-left border-collapse whitespace-nowrap" id="teacherTable">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th class="p-4 font-semibold text-sm">ID</th>
+                                        <th class="p-4 font-semibold text-sm" data-i18n="name">নাম</th>
+                                        <th class="p-4 font-semibold text-sm" data-i18n="designation">পদবী</th>
+                                        <th class="p-4 font-semibold text-sm" data-i18n="contact">মোবাইল</th>
+                                        <th class="p-4 font-semibold text-sm no-print" data-i18n="action">অ্যাকশন</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teacherTableBody" class="divide-y divide-slate-200 dark:divide-slate-700">
+                                    <!-- Populated by Firebase -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </main>
     </div>
+</div>
 
-    <!-- ADD STUDENT & GENERATE CREDENTIALS MODAL -->
-    <div class="modal fade" id="addStudentModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content premium-card border-0">
-                <div class="modal-header bg-success text-white" style="border-radius: 1rem 1rem 0 0;">
-                    <h5 class="modal-title fw-bold" data-i18n="add_student">Add New Student</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<!-- ================= MODALS ================= -->
+
+<!-- Add Student Modal -->
+<div id="studentModal" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto transform transition-all">
+        <div class="sticky top-0 bg-primary-600 text-white p-4 rounded-t-2xl flex justify-between items-center z-10">
+            <h3 class="font-bold text-lg"><i class="fa-solid fa-user-plus me-2"></i> <span data-i18n="add_student">নতুন শিক্ষার্থী ভর্তি</span></h3>
+            <button onclick="closeModal('studentModal')" class="hover:bg-white/20 p-1 rounded"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="p-6">
+            <form id="studentForm" onsubmit="saveStudent(event)">
+                <h5 class="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">Personal Information</h5>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">Name (English)</label>
+                        <input type="text" id="s_name_en" class="form-input bg-transparent" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">নাম (বাংলা)</label>
+                        <input type="text" id="s_name_bn" class="form-input bg-transparent" required>
+                    </div>
+                    <div dir="rtl">
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">الاسم (عربي)</label>
+                        <input type="text" id="s_name_ar" class="form-input bg-transparent" required>
+                    </div>
                 </div>
-                <div class="modal-body p-4">
-                    <form id="addStudentForm" onsubmit="saveStudent(event)">
-                        
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold">Student Name (English)</label>
-                                <input type="text" class="form-control" id="s_name_en" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold">নাম (বাংলা)</label>
-                                <input type="text" class="form-control" id="s_name_bn" required>
-                            </div>
-                            <div class="col-md-4" dir="rtl">
-                                <label class="form-label small fw-bold">الاسم (عربي)</label>
-                                <input type="text" class="form-control" id="s_name_ar" required>
-                            </div>
-                        </div>
 
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold">Class</label>
-                                <select class="form-select" id="s_class" required>
-                                    <option value="Hifz">Hifz</option>
-                                    <option value="Alim">Alim</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold">Contact</label>
-                                <input type="text" class="form-control" id="s_contact" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold text-primary">Login Password</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control text-primary fw-bold" id="s_password" readonly required>
-                                    <button type="button" class="btn btn-outline-primary" onclick="autoGeneratePassword()" title="Auto Generate"><i class="fa-solid fa-rotate"></i></button>
-                                </div>
-                                <small class="text-muted">Auto generated credentials</small>
-                            </div>
-                        </div>
-
-                        <div class="text-end mt-2">
-                            <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal" data-i18n="cancel">Cancel</button>
-                            <button type="submit" class="btn btn-islamic"><i class="fa-solid fa-save me-1"></i> <span data-i18n="save">Save Data</span></button>
-                        </div>
-                    </form>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">Class</label>
+                        <select id="s_class" class="form-input bg-transparent" required>
+                            <option value="Nazera">Nazera (নাজেরা)</option>
+                            <option value="Hifz">Hifz (হিফজ)</option>
+                            <option value="Alim">Alim (আলিম)</option>
+                            <option value="Fazil">Fazil (ফাজিল)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">Contact Number</label>
+                        <input type="text" id="s_contact" class="form-input bg-transparent" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">Blood Group</label>
+                        <select id="s_blood" class="form-input bg-transparent">
+                            <option value="A+">A+</option><option value="O+">O+</option><option value="B+">B+</option><option value="AB+">AB+</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
+
+                <h5 class="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4 border-b border-slate-200 dark:border-slate-700 pb-2 mt-8">System Credentials (Auto-Generated)</h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-primary-600">Student ID (Username)</label>
+                        <input type="text" id="s_id" class="form-input bg-slate-100 dark:bg-slate-900 text-slate-500 font-mono font-bold cursor-not-allowed" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-primary-600">Login Password</label>
+                        <div class="flex">
+                            <input type="text" id="s_password" class="form-input rounded-r-none bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-mono font-bold" readonly required>
+                            <button type="button" class="bg-primary-100 text-primary-700 px-4 border border-l-0 border-slate-300 dark:border-slate-600 rounded-r-lg hover:bg-primary-200" onclick="autoGeneratePassword('s_password')" title="Regenerate">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-8">
+                    <button type="button" class="px-5 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700" onclick="closeModal('studentModal')" data-i18n="cancel">বাতিল</button>
+                    <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-bold shadow-md"><i class="fa-solid fa-save mr-2"></i> <span data-i18n="save">সংরক্ষণ করুন</span></button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- Firebase Modular Setup (Realtime Database implementation) -->
+
+<!-- Add Teacher Modal -->
+<div id="teacherModal" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto transform transition-all">
+        <div class="sticky top-0 bg-blue-600 text-white p-4 rounded-t-2xl flex justify-between items-center z-10">
+            <h3 class="font-bold text-lg"><i class="fa-solid fa-chalkboard-user me-2"></i> <span data-i18n="add_teacher">নতুন শিক্ষক যুক্ত করুন</span></h3>
+            <button onclick="closeModal('teacherModal')" class="hover:bg-white/20 p-1 rounded"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="p-6">
+            <form id="teacherForm" onsubmit="saveTeacher(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">Name (English)</label>
+                        <input type="text" id="t_name_en" class="form-input bg-transparent" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">নাম (বাংলা)</label>
+                        <input type="text" id="t_name_bn" class="form-input bg-transparent" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">Designation</label>
+                        <input type="text" id="t_designation" class="form-input bg-transparent" required placeholder="e.g. Senior Teacher">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">Contact</label>
+                        <input type="text" id="t_contact" class="form-input bg-transparent" required>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800 mt-6">
+                    <h6 class="font-bold text-blue-700 dark:text-blue-400 mb-3 text-sm">System Credentials</h6>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium mb-1 text-slate-500">Teacher ID (Username)</label>
+                            <input type="text" id="t_id" class="form-input bg-slate-100 dark:bg-slate-900 text-slate-500 font-mono font-bold cursor-not-allowed text-sm" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1 text-slate-500">Password</label>
+                            <div class="flex">
+                                <input type="text" id="t_password" class="form-input rounded-r-none bg-white dark:bg-slate-900 font-mono text-sm" readonly required>
+                                <button type="button" class="bg-blue-100 text-blue-700 px-3 border border-l-0 border-slate-300 dark:border-slate-600 rounded-r-lg hover:bg-blue-200" onclick="autoGeneratePassword('t_password')">
+                                    <i class="fa-solid fa-rotate"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" class="px-5 py-2 rounded-lg border border-slate-300 text-slate-600" onclick="closeModal('teacherModal')" data-i18n="cancel">বাতিল</button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-md"><i class="fa-solid fa-save mr-2"></i> <span data-i18n="save">সংরক্ষণ করুন</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ================= SCRIPTS ================= -->
+
+<!-- Firebase Realtime DB Module (Canvas Specific Rules Applied) -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    let db, auth, studentsCollection, currentUserId;
+    let db, auth, studentsCol, teachersCol, currentUserId;
+    // Canvas Rule 1: Use specific appId path
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'madrasa-erp-db';
 
-    // Export to window so regular scripts can use it
     window.dbStudents = [];
-    window.saveToRealtimeDB = async (studentData) => {
-        if(!db || !currentUserId) return false;
-        try {
-            await setDoc(doc(studentsCollection, studentData.id), studentData);
-            return true;
-        } catch(e) { console.error(e); return false; }
-    };
-
-    window.deleteFromRealtimeDB = async (studentId) => {
-        if(!db || !currentUserId) return false;
-        try {
-            await deleteDoc(doc(studentsCollection, studentId));
-            return true;
-        } catch(e) { console.error(e); return false; }
-    };
+    window.dbTeachers = [];
 
     const initFirebase = async () => {
         try {
             const statusEl = document.getElementById('dbStatus');
             
-            // Check if Firebase config is injected (Canvas environment)
             if (typeof __firebase_config !== 'undefined') {
                 const firebaseConfig = JSON.parse(__firebase_config);
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // Auth Rule 3: Always authenticate before queries
+                // Canvas Rule 3: Auth First before DB queries
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
@@ -555,308 +594,405 @@
                 onAuthStateChanged(auth, user => {
                     if (user) {
                         currentUserId = user.uid;
-                        // Rule 1: Strict paths for public real-time data
-                        studentsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'students');
                         
-                        // Rule 2: Simple queries and onSnapshot listener
-                        onSnapshot(studentsCollection, (snapshot) => {
+                        // Canvas Rule 1: Strict paths for public real-time data
+                        studentsCol = collection(db, 'artifacts', appId, 'public', 'data', 'students');
+                        teachersCol = collection(db, 'artifacts', appId, 'public', 'data', 'teachers');
+                        
+                        // Rule 2: Simple queries, let JS handle sorting/filtering
+                        onSnapshot(studentsCol, (snapshot) => {
                             window.dbStudents = [];
                             snapshot.forEach((doc) => { window.dbStudents.push(doc.data()); });
-                            
-                            statusEl.className = 'alert alert-success d-flex align-items-center mb-4';
-                            statusEl.innerHTML = `<i class="fa-solid fa-check-circle me-2"></i> <span data-i18n="db_connected">Real-time Database Connected. Live Sync Active.</span>`;
-                            window.applyTranslations();
-                            
                             window.renderStudents();
-                        }, (error) => {
-                            console.error("Firestore Error: ", error);
-                        });
+                            updateDashboardCounts();
+                            updateStatus(true);
+                        }, (error) => console.error(error));
+
+                        onSnapshot(teachersCol, (snapshot) => {
+                            window.dbTeachers = [];
+                            snapshot.forEach((doc) => { window.dbTeachers.push(doc.data()); });
+                            window.renderTeachers();
+                            updateDashboardCounts();
+                        }, (error) => console.error(error));
                     }
                 });
             } else {
                 throw new Error("No config");
             }
         } catch (error) {
-            // Fallback for Local Testing outside Canvas
-            const statusEl = document.getElementById('dbStatus');
-            if(statusEl) {
-                statusEl.className = 'alert alert-warning d-flex align-items-center mb-4';
-                statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-2"></i> <span data-i18n="db_local">Offline Mode: Using Local Memory (Database not configured)</span>`;
-            }
-            
-            // Populate mock data if DB not available
-            window.dbStudents = [
-                { id: '2026001', name_en: 'Abdul Rahman', name_bn: 'আব্দুর রহমান', name_ar: 'عبد الرحمن', class: 'Alim', contact: '01711000001', password: 'AutoGenPass123' }
-            ];
+            updateStatus(false);
+            // Dummy data for testing if no DB
+            window.dbStudents = [{ id: 'STU2026001', name_en: 'Abdullah', name_bn: 'আব্দুল্লাহ', name_ar: 'عبد الله', class: 'Hifz', contact: '017000000', password: 'Pass' }];
+            window.dbTeachers = [{ id: 'TCH2026001', name_en: 'Md. Rahman', name_bn: 'মোঃ রহমান', designation: 'Senior Teacher', contact: '018000000', password: 'Pass' }];
             window.renderStudents();
-            window.applyTranslations();
+            window.renderTeachers();
+            updateDashboardCounts();
         }
     };
 
-    // Initialize after DOM loads
+    function updateStatus(isConnected) {
+        const el = document.getElementById('dbStatus');
+        if(isConnected) {
+            el.className = 'mb-6 p-4 rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-3 shadow-sm no-print';
+            el.innerHTML = `<i class="fa-solid fa-check-circle text-xl"></i> <span data-i18n="db_connected" class="font-medium">Firebase Real-time Sync Active</span>`;
+        } else {
+            el.className = 'mb-6 p-4 rounded-lg bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800 flex items-center gap-3 shadow-sm no-print';
+            el.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-xl"></i> <span class="font-medium">Offline Mode: Database not configured. Running local memory.</span>`;
+        }
+        if(window.applyTranslations) window.applyTranslations();
+    }
+
+    // Exported DB Functions
+    window.saveToDB = async (collectionName, data) => {
+        if(!db || !currentUserId) return false;
+        try {
+            const col = collectionName === 'students' ? studentsCol : teachersCol;
+            await setDoc(doc(col, data.id), data);
+            return true;
+        } catch(e) { console.error(e); return false; }
+    };
+
+    window.deleteFromDB = async (collectionName, id) => {
+        if(!db || !currentUserId) return false;
+        try {
+            const col = collectionName === 'students' ? studentsCol : teachersCol;
+            await deleteDoc(doc(col, id));
+            return true;
+        } catch(e) { console.error(e); return false; }
+    };
+
     document.addEventListener("DOMContentLoaded", initFirebase);
 </script>
 
-<!-- UI Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
-
+<!-- UI, Logic & i18n Scripts -->
 <script>
-    // --- 1. MULTILINGUAL DICTIONARY ---
-    const dict = {
-        en: {
-            // ... existing keys ...
-            exam: "Exam Management",
-            result_mark: "Result/Mark Sheet",
-            certificates: "Certificates",
-            administration: "Administration", fee: "Fee Collection", accounts: "Accounts",
-            library: "Library", assets: "Assets/Inventory",
-            system: "System", settings: "Settings & Backup", logout: "Logout",
-            // ... existing keys ...
-        },
+    // --- 1. DICTIONARY (Multi-Language Support) ---
+    const i18n = {
         bn: {
-            // ... existing keys ...
-            exam: "পরীক্ষা ব্যবস্থাপনা",
-            result_mark: "ফলাফল/মার্কশীট",
-            certificates: "সার্টিফিকেট",
-            administration: "প্রশাসন", fee: "ফি কালেকশন", accounts: "হিসাবরক্ষণ",
-            library: "লাইব্রেরি", assets: "সম্পদ/ইনভেন্টরি",
-            system: "সিস্টেম", settings: "সেটিংস ও ব্যাকআপ", logout: "লগআউট",
-            // ... existing keys ...
+            login_subtitle: "প্রোডাকশন রেডি এডুকেশন ম্যানেজমেন্ট", welcome: "স্বাগতম", login_instruction: "অ্যাকাউন্টে লগইন করুন",
+            admin: "অ্যাডমিন", teacher: "শিক্ষক", student: "শিক্ষার্থী", username: "ইউজারনেম / আইডি", password: "পাসওয়ার্ড", login_btn: "লগইন করুন",
+            main_menu: "মেইন মেনু", dashboard: "ড্যাশবোর্ড", people: "জনবল", student_mod: "শিক্ষার্থী মডিউল", teacher_mod: "শিক্ষক মডিউল", guardian_mod: "অভিভাবক মডিউল",
+            academic: "অ্যাকাডেমিক", attendance: "উপস্থিতি", routine: "ক্লাস রুটিন", exam: "পরীক্ষা মডিউল", certificates: "সার্টিফিকেট ও টেমপ্লেট",
+            administration: "প্রশাসন", fee: "ফি কালেকশন", accounts: "হিসাবরক্ষণ", hostel_transport: "হোস্টেল ও পরিবহন", logout: "লগআউট",
+            total_students: "মোট শিক্ষার্থী", total_teachers: "মোট শিক্ষক", today_income: "আজকের আয়", today_expense: "আজকের ব্যয়",
+            fee_summary: "ফি কালেকশন সামারি", recent_activity: "সাম্প্রতিক কার্যক্রম", db_connected: "রিয়েল-টাইম ডাটাবেজ সংযুক্ত",
+            student_dir: "শিক্ষার্থী তালিকা", add_student: "নতুন ভর্তি", name: "নাম", class: "ক্লাস", contact: "মোবাইল", status: "স্ট্যাটাস", action: "অ্যাকশন",
+            teacher_dir: "শিক্ষক তালিকা", add_teacher: "নতুন শিক্ষক", designation: "পদবী", save: "সংরক্ষণ করুন", cancel: "বাতিল"
+        },
+        en: {
+            login_subtitle: "Production Ready Education Management", welcome: "Welcome", login_instruction: "Login to your account",
+            admin: "Admin", teacher: "Teacher", student: "Student", username: "Username / ID", password: "Password", login_btn: "Login Securely",
+            main_menu: "Main Menu", dashboard: "Dashboard", people: "People", student_mod: "Student Module", teacher_mod: "Teacher Module", guardian_mod: "Guardian Module",
+            academic: "Academic", attendance: "Attendance", routine: "Class Routine", exam: "Exam Module", certificates: "Certificates & Templates",
+            administration: "Administration", fee: "Fee Collection", accounts: "Accounting", hostel_transport: "Hostel & Transport", logout: "Logout",
+            total_students: "Total Students", total_teachers: "Total Teachers", today_income: "Today's Income", today_expense: "Today's Expense",
+            fee_summary: "Fee Collection Summary", recent_activity: "Recent Activity", db_connected: "Real-time Database Active",
+            student_dir: "Student Directory", add_student: "Add Admission", name: "Name", class: "Class", contact: "Contact", status: "Status", action: "Action",
+            teacher_dir: "Teacher Directory", add_teacher: "Add Teacher", designation: "Designation", save: "Save Data", cancel: "Cancel"
         },
         ar: {
-            // ... existing keys ...
-            exam: "إدارة الامتحانات",
-            result_mark: "النتائج/كشف الدرجات",
-            certificates: "الشهادات",
-            administration: "الإدارة", fee: "تحصيل الرسوم", accounts: "الحسابات",
-            library: "المكتبة", assets: "الأصول/المخزون",
-            system: "النظام", settings: "الإعدادات والنسخ الاحتياطي", logout: "تسجيل خروج",
-            // ... existing keys ...
+            login_subtitle: "نظام إدارة التعليم الجاهز للإنتاج", welcome: "مرحباً بك", login_instruction: "تسجيل الدخول إلى حسابك",
+            admin: "مدير", teacher: "معلم", student: "طالب", username: "اسم المستخدم", password: "كلمة المرور", login_btn: "تسجيل الدخول",
+            main_menu: "القائمة الرئيسية", dashboard: "لوحة القيادة", people: "الأشخاص", student_mod: "وحدة الطلاب", teacher_mod: "وحدة المعلمين", guardian_mod: "وحدة أولياء الأمور",
+            academic: "أكاديمي", attendance: "الحضور", routine: "الجدول الدراسي", exam: "وحدة الامتحانات", certificates: "الشهادات والقوالب",
+            administration: "الإدارة", fee: "تحصيل الرسوم", accounts: "الحسابات", hostel_transport: "السكن والنقل", logout: "تسجيل خروج",
+            total_students: "إجمالي الطلاب", total_teachers: "إجمالي المعلمين", today_income: "دخل اليوم", today_expense: "مصروفات اليوم",
+            fee_summary: "ملخص تحصيل الرسوم", recent_activity: "الأنشطة الأخيرة", db_connected: "قاعدة البيانات نشطة",
+            student_dir: "دليل الطلاب", add_student: "قبول جديد", name: "الاسم", class: "الصف", contact: "الاتصال", status: "الحالة", action: "إجراء",
+            teacher_dir: "دليل المعلمين", add_teacher: "إضافة معلم", designation: "المنصب", save: "حفظ البيانات", cancel: "إلغاء"
         }
     };
 
-    let currentLang = 'bn'; // Defaulting to Bengali based on user request context
-    let selectedRole = 'admin';
-    let addModal;
-
-    // --- 2. INITIALIZATION ---
-    document.addEventListener("DOMContentLoaded", () => {
-        // Init Tabs
-        document.querySelectorAll('#loginTabs .nav-link').forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.querySelectorAll('#loginTabs .nav-link').forEach(t => {
-                    t.classList.remove('active', 'text-white', 'bg-primary-custom');
-                    t.classList.add('text-dark');
-                });
-                tab.classList.remove('text-dark');
-                tab.classList.add('active', 'text-white', 'bg-primary-custom');
-                selectedRole = tab.getAttribute('data-role');
-            });
-        });
-
-        // Set default lang
-        changeLanguage('bn');
-        document.getElementById('langSelect').value = 'bn';
-        addModal = new bootstrap.Modal(document.getElementById('addStudentModal'));
-    });
+    let currentLang = 'bn';
+    let chartInstance = null;
 
     window.changeLanguage = function(lang) {
         currentLang = lang;
         document.body.setAttribute('lang', lang);
         document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+        
+        // Sync selects
+        const select = document.getElementById('appLangSelect');
+        if(select) select.value = lang;
+
         window.applyTranslations();
-        window.renderStudents(); // Re-render tables to apply names in correct language
+        window.renderStudents();
+        window.renderTeachers();
     }
 
     window.applyTranslations = function() {
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
-            if (dict[currentLang] && dict[currentLang][key]) { 
-                // Keep icons if they exist inside the element
+            if (i18n[currentLang] && i18n[currentLang][key]) {
                 const icon = el.querySelector('i');
                 if(icon) {
                     el.innerHTML = '';
                     el.appendChild(icon);
-                    el.innerHTML += ' ' + dict[currentLang][key];
+                    el.innerHTML += ' ' + i18n[currentLang][key];
                 } else {
-                    el.innerText = dict[currentLang][key];
+                    el.innerText = i18n[currentLang][key];
                 }
             }
         });
     }
 
-    // --- 3. UI/UX HELPERS ---
+    // --- 2. THEME & UI HELPERS ---
+    window.toggleTheme = function() {
+        const html = document.documentElement;
+        const icon = document.getElementById('themeIcon');
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            icon.className = 'fa-solid fa-moon';
+        } else {
+            html.classList.add('dark');
+            icon.className = 'fa-solid fa-sun';
+        }
+    }
+
     window.togglePassword = function(id) {
         const input = document.getElementById(id);
         const icon = input.nextElementSibling.querySelector('i');
-        if (input.type === 'password') { input.type = 'text'; icon.className = 'fa-solid fa-eye-slash text-primary'; } 
-        else { input.type = 'password'; icon.className = 'fa-solid fa-eye text-muted'; }
+        if (input.type === 'password') { input.type = 'text'; icon.className = 'fa-solid fa-eye-slash text-primary-600'; } 
+        else { input.type = 'password'; icon.className = 'fa-solid fa-eye'; }
     }
 
     window.handleLogin = function(e) {
         e.preventDefault();
-        document.getElementById('view-login').classList.add('d-none');
-        document.getElementById('view-main').classList.remove('d-none');
-        window.navigate('dashboard');
+        document.getElementById('auth-view').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+        initChart(); // init chart when visible
     }
 
     window.logout = function() {
-        document.getElementById('view-main').classList.add('d-none');
-        document.getElementById('view-login').classList.remove('d-none');
-    }
-
-    window.navigate = function(pageId) {
-        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-        if(event && event.currentTarget) {
-            event.currentTarget.classList.add('active');
-            // document.getElementById('pageTitle').innerText = event.currentTarget.innerText.trim();
-        }
-
-        document.querySelectorAll('#view-container > div').forEach(el => el.classList.add('d-none'));
-        document.getElementById('page-' + pageId).classList.remove('d-none');
-
-        // Close sidebar on mobile after navigation
-        if(window.innerWidth < 768) {
-            document.getElementById('mainSidebar').classList.remove('show');
-            document.querySelector('.sidebar-overlay').classList.remove('show');
-        }
+        document.getElementById('main-app').classList.add('hidden');
+        document.getElementById('auth-view').classList.remove('hidden');
     }
 
     window.toggleSidebar = function() {
-        document.getElementById('mainSidebar').classList.toggle('show');
-        document.querySelector('.sidebar-overlay').classList.toggle('show');
+        document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        document.getElementById('sidebar').classList.toggle('rtl:translate-x-full');
+        document.getElementById('sidebar-overlay').classList.toggle('hidden');
     }
 
-    window.toggleTheme = function() {
-        const body = document.body;
-        const icon = document.querySelector('#themeToggleBtn i');
-        if (body.getAttribute('data-theme') === 'light') {
-            body.setAttribute('data-theme', 'dark');
-            icon.className = 'fa-solid fa-sun text-warning';
-        } else {
-            body.setAttribute('data-theme', 'light');
-            icon.className = 'fa-solid fa-moon text-muted';
+    window.navigate = function(pageId, element) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        if(element) element.classList.add('active');
+
+        document.querySelectorAll('.page-view').forEach(el => el.classList.add('hidden'));
+        document.getElementById('page-' + pageId).classList.remove('hidden');
+
+        // Close sidebar on mobile
+        if(window.innerWidth < 1024) {
+            document.getElementById('sidebar').classList.add('-translate-x-full', 'rtl:translate-x-full');
+            document.getElementById('sidebar-overlay').classList.add('hidden');
         }
     }
 
     window.alertMsg = function(moduleName) {
         Swal.fire({
-            title: currentLang === 'bn' ? 'কাজ চলছে' : 'Module In Progress',
-            text: moduleName,
-            icon: 'info', confirmButtonColor: '#047857'
+            title: currentLang === 'bn' ? 'কাজ চলছে' : 'Module Setup Required',
+            text: `Architecture ready for: ${moduleName}. Requires backend integration for file uploads & complex parsing.`,
+            icon: 'info', confirmButtonColor: '#059669'
         });
     }
 
-    // --- 4. DATA LOGIC & PASSWORD AUTOGEN ---
-    window.autoGeneratePassword = function() {
-        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$";
+    window.openModal = function(id) { 
+        document.getElementById(id).classList.remove('hidden'); 
+        if(id === 'studentModal') generateNewId('STU', 's_id', 's_password', window.dbStudents);
+        if(id === 'teacherModal') generateNewId('TCH', 't_id', 't_password', window.dbTeachers);
+    }
+    window.closeModal = function(id) { document.getElementById(id).classList.add('hidden'); }
+
+    // --- 3. AUTO CREDENTIALS GENERATION ---
+    window.autoGeneratePassword = function(inputId) {
+        const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789@#";
         let pass = "";
-        for (let i = 0; i < 8; i++) { pass += chars.charAt(Math.floor(Math.random() * chars.length)); }
-        document.getElementById('s_password').value = pass;
+        for (let i = 0; i < 8; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        document.getElementById(inputId).value = pass;
     }
 
-    window.showAddStudentModal = function() {
-        document.getElementById('addStudentForm').reset();
-        window.autoGeneratePassword();
-        addModal.show();
+    function generateNewId(prefix, idField, passField, array) {
+        const year = new Date().getFullYear();
+        const num = array.length + 1;
+        document.getElementById(idField).value = `${prefix}${year}${String(num).padStart(3, '0')}`;
+        window.autoGeneratePassword(passField);
     }
 
+    // --- 4. CRUD OPERATIONS (STUDENTS & TEACHERS) ---
+    
+    // STUDENT
     window.saveStudent = async function(e) {
         e.preventDefault();
-        
-        // Auto ID logic based on array length
-        const newId = '2026' + String(window.dbStudents.length + 1).padStart(3, '0');
-        
-        const newStudent = {
-            id: newId,
+        const data = {
+            id: document.getElementById('s_id').value,
             name_en: document.getElementById('s_name_en').value,
             name_bn: document.getElementById('s_name_bn').value,
             name_ar: document.getElementById('s_name_ar').value,
             class: document.getElementById('s_class').value,
             contact: document.getElementById('s_contact').value,
-            password: document.getElementById('s_password').value
+            blood: document.getElementById('s_blood').value,
+            password: document.getElementById('s_password').value,
+            timestamp: new Date().toISOString()
         };
 
-        let success = true;
-        
-        // Save to Firebase if available, else local
-        if (typeof window.saveToRealtimeDB === 'function' && window.saveToRealtimeDB(newStudent) !== false) {
-             success = await window.saveToRealtimeDB(newStudent);
-        } else {
-             window.dbStudents.push(newStudent); // Local fallback
-        }
+        if (window.saveToDB) await window.saveToDB('students', data);
+        else window.dbStudents.push(data); // Local Fallback
 
-        if(success) {
-            addModal.hide();
-            Swal.fire({
-                title: currentLang === 'bn' ? 'সফল!' : 'Success', 
-                text: currentLang === 'bn' ? 'শিক্ষার্থী যুক্ত করা হয়েছে।' : 'Student Added Successfully!',
-                icon: 'success', confirmButtonColor: '#047857'
-            });
-            window.renderStudents();
-        }
-    }
-
-    window.deleteStudent = async function(id) {
-        if(confirm(currentLang==='bn' ? "আপনি কি নিশ্চিত?" : "Are you sure?")) {
-            if (typeof window.deleteFromRealtimeDB === 'function' && window.deleteFromRealtimeDB(id) !== false) {
-                await window.deleteFromRealtimeDB(id);
-            } else {
-                window.dbStudents = window.dbStudents.filter(s => s.id !== id); // Local fallback
-            }
-            window.renderStudents();
-        }
-    }
-
-    window.showPassword = function(id) {
-        const student = window.dbStudents.find(s => s.id === id);
-        if(student) {
-            Swal.fire({
-                title: currentLang === 'bn' ? 'লগইন তথ্য' : 'Login Credentials',
-                html: `<div class="text-start">
-                        <b>ID / Username:</b> ${student.id} <br>
-                        <b>Password:</b> <span class="text-primary fw-bold">${student.password || 'N/A'}</span>
-                       </div>`,
-                icon: 'info', confirmButtonColor: '#047857'
-            });
-        }
+        closeModal('studentModal');
+        document.getElementById('studentForm').reset();
+        Swal.fire({ icon: 'success', title: currentLang==='bn'?'সফল!':'Success', timer: 1500, showConfirmButton: false });
+        if(!window.saveToDB) { window.renderStudents(); updateDashboardCounts(); }
     }
 
     window.renderStudents = function() {
         const tbody = document.getElementById('studentTableBody');
-        const dashCount = document.getElementById('dashTotalStudents');
         if(!tbody) return;
-        
         tbody.innerHTML = '';
-        const students = window.dbStudents || [];
-        dashCount.innerText = students.length;
-
-        students.forEach(s => {
-            // Pick name based on language
-            let displayName = s.name_en;
-            if(currentLang === 'bn') displayName = s.name_bn || s.name_en;
-            if(currentLang === 'ar') displayName = s.name_ar || s.name_en;
+        
+        window.dbStudents.forEach(s => {
+            let name = s.name_en;
+            if(currentLang === 'bn') name = s.name_bn || name;
+            if(currentLang === 'ar') name = s.name_ar || name;
 
             tbody.innerHTML += `
-                <tr>
-                    <td class="fw-bold text-success">#${s.id}</td>
-                    <td class="fw-bold" ${currentLang==='ar' ? 'dir="rtl" style="font-family: Noto Kufi Arabic;"' : ''}>${displayName}</td>
-                    <td><span class="badge bg-light text-dark border">${s.class}</span></td>
-                    <td>${s.contact}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-info" onclick="showPassword('${s.id}')">
-                            <i class="fa-solid fa-key me-1"></i> <span data-i18n="view_pass">${dict[currentLang]?.view_pass || 'View Pass'}</span>
-                        </button>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-light border text-danger" onclick="deleteStudent('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                    <td class="p-4 font-mono font-bold text-primary-600 dark:text-primary-400">#${s.id}</td>
+                    <td class="p-4 font-medium" ${currentLang==='ar' ? 'dir="rtl"' : ''}>${name}</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-xs font-bold border border-slate-200 dark:border-slate-700">${s.class}</span></td>
+                    <td class="p-4 text-sm">${s.contact}</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">Active</span></td>
+                    <td class="p-4 flex gap-2 no-print">
+                        <button class="w-8 h-8 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center" onclick="showCredentials('${s.id}', 'student')" title="View Credentials"><i class="fa-solid fa-key"></i></button>
+                        <button class="w-8 h-8 rounded bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center" onclick="deleteRecord('students', '${s.id}')"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;
         });
     }
+
+    // TEACHER
+    window.saveTeacher = async function(e) {
+        e.preventDefault();
+        const data = {
+            id: document.getElementById('t_id').value,
+            name_en: document.getElementById('t_name_en').value,
+            name_bn: document.getElementById('t_name_bn').value,
+            designation: document.getElementById('t_designation').value,
+            contact: document.getElementById('t_contact').value,
+            password: document.getElementById('t_password').value,
+            timestamp: new Date().toISOString()
+        };
+
+        if (window.saveToDB) await window.saveToDB('teachers', data);
+        else window.dbTeachers.push(data); // Local Fallback
+
+        closeModal('teacherModal');
+        document.getElementById('teacherForm').reset();
+        Swal.fire({ icon: 'success', title: currentLang==='bn'?'সফল!':'Success', timer: 1500, showConfirmButton: false });
+        if(!window.saveToDB) { window.renderTeachers(); updateDashboardCounts(); }
+    }
+
+    window.renderTeachers = function() {
+        const tbody = document.getElementById('teacherTableBody');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+        
+        window.dbTeachers.forEach(t => {
+            let name = currentLang === 'bn' ? (t.name_bn || t.name_en) : t.name_en;
+            tbody.innerHTML += `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                    <td class="p-4 font-mono font-bold text-blue-600 dark:text-blue-400">#${t.id}</td>
+                    <td class="p-4 font-medium">${name}</td>
+                    <td class="p-4 text-sm text-slate-500">${t.designation}</td>
+                    <td class="p-4 text-sm">${t.contact}</td>
+                    <td class="p-4 flex gap-2 no-print">
+                        <button class="w-8 h-8 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center" onclick="showCredentials('${t.id}', 'teacher')" title="View Credentials"><i class="fa-solid fa-key"></i></button>
+                        <button class="w-8 h-8 rounded bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center" onclick="deleteRecord('teachers', '${t.id}')"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    // SHARED CRUD UTILS
+    window.deleteRecord = async function(collectionName, id) {
+        const confirmText = currentLang === 'bn' ? "আপনি কি নিশ্চিত?" : "Are you sure?";
+        if(confirm(confirmText)) {
+            if (window.deleteFromDB) await window.deleteFromDB(collectionName, id);
+            else {
+                if(collectionName === 'students') window.dbStudents = window.dbStudents.filter(s => s.id !== id);
+                if(collectionName === 'teachers') window.dbTeachers = window.dbTeachers.filter(s => s.id !== id);
+                collectionName === 'students' ? window.renderStudents() : window.renderTeachers();
+                updateDashboardCounts();
+            }
+        }
+    }
+
+    window.showCredentials = function(id, type) {
+        const array = type === 'student' ? window.dbStudents : window.dbTeachers;
+        const person = array.find(p => p.id === id);
+        if(person) {
+            Swal.fire({
+                title: currentLang === 'bn' ? 'লগইন তথ্য' : 'Login Credentials',
+                html: `<div class="text-left bg-slate-50 p-4 rounded border font-mono">
+                        <div class="mb-2"><span class="text-slate-500">ID / Username:</span> <br><b>${person.id}</b></div>
+                        <div><span class="text-slate-500">Password:</span> <br><b class="text-primary-600">${person.password}</b></div>
+                       </div>`,
+                icon: 'info', confirmButtonColor: '#059669'
+            });
+        }
+    }
+
+    function updateDashboardCounts() {
+        document.getElementById('dashTotalStudents').innerText = window.dbStudents.length;
+        document.getElementById('dashTotalTeachers').innerText = window.dbTeachers.length;
+    }
+
+    window.filterTable = function(tableId, query) {
+        const filter = query.toUpperCase();
+        const trs = document.getElementById(tableId).getElementsByTagName("tr");
+        for (let i = 1; i < trs.length; i++) {
+            let txtValue = trs[i].textContent || trs[i].innerText;
+            trs[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+        }
+    }
+
+    // --- 5. CHART.JS INITIALIZATION ---
+    function initChart() {
+        if(chartInstance) return; // Only init once
+        const ctx = document.getElementById('feeChart');
+        if(!ctx) return;
+        
+        Chart.defaults.color = document.documentElement.classList.contains('dark') ? '#94a3b8' : '#64748b';
+        Chart.defaults.font.family = "'Poppins', sans-serif";
+
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: currentLang === 'bn' ? 'কালেকশন (৳)' : 'Collection (৳)',
+                    data: [120000, 190000, 150000, 220000, 180000, 250000],
+                    backgroundColor: '#10b981',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // Init language on load
+    document.addEventListener("DOMContentLoaded", () => {
+        changeLanguage('bn');
+    });
 
 </script>
 </body>
